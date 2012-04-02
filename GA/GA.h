@@ -24,6 +24,9 @@ namespace GA {
 		bool operator <(const Solution<T, C>& r) const {
 			return this->cost > r.cost;
         }
+		bool operator >(const Solution<T, C>& r) const {
+			return r < *this;
+        }
 		bool operator ==(const Solution<T, C>& other) const {
 			return equal(this->genotype.begin(), this->genotype.end(), other.genotype.begin());
         }

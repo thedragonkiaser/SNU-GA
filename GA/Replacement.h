@@ -15,7 +15,19 @@ namespace GA {
 			Crowding
 		};
 	public:
-		virtual void replace(typename S::Vector& offsprings, typename S::Vector& population) = 0;
+		virtual void replace(typename S::Vector& offsprings, typename S::Vector& population) {
+			typename S::Vector::iterator it = offsprings.begin();
+			for (; it != offsprings.end(); ++it) {
+				this->_remove(*it, population);
+
+				typename S::Vector::iterator pit = population.begin();
+				for (; pit != population.end(); ++pit) {
+					if (**it > **pit)
+						break;
+				}
+				population.insert(pit, *it);
+			}
+		}
 
 		static ReplacementOp<S>* Create(CCmdLine& cmdLine) {
 			int mode = MyUtil::strTo<int>( cmdLine.GetArgument("-R", 0) );
@@ -27,6 +39,9 @@ namespace GA {
 			}
 			return NULL;
 		}
+
+	protected:
+		virtual void _remove(typename S::Ptr pOffspring, typename S::Vector& population) = 0;
 	};
 
 	template <typename S>
@@ -35,18 +50,9 @@ namespace GA {
 		ReplaceWorst(CCmdLine& cmdLine) {}
 		virtual ~ReplaceWorst() {}
 
-		void replace(typename S::Vector& offsprings, typename S::Vector& population) {
-			typename S::Vector::iterator it = offsprings.begin();
-			for (; it != offsprings.end(); ++it) {
-				population.pop_back();
-				typename S::Vector::iterator pit = population.begin();
-				for (; pit != population.end(); ++pit) {
-					if (**it < **pit)
-						continue;	
-					break;
-				}
-				population.insert(pit, *it);
-			}
+	protected:
+		virtual void _remove(typename S::Ptr pOffspring, typename S::Vector& population) {
+			population.pop_back();
 		}
 	};
 
@@ -56,23 +62,14 @@ namespace GA {
 		ReplaceParent(CCmdLine& cmdLine) {}
 		virtual ~ReplaceParent() {}
 
-		void replace(typename S::Vector& offsprings, typename S::Vector& population) {
-			typename S::Vector::iterator it = offsprings.begin();
-			for (; it != offsprings.end(); ++it) {
-				typename S::Vector::iterator pit = population.begin();
-				for (; pit != population.end(); ++pit) {
-					if (**pit == *((*it)->parents.first)) {
-						population.erase(pit);
-						break;
-					}
-				}
-				pit = population.begin();
-				for (; pit != population.end(); ++pit) {
-					if (**it < **pit)
-						continue;
+	protected:
+		virtual void _remove(typename S::Ptr pOffspring, typename S::Vector& population) {
+			typename S::Vector::iterator pit = population.begin();
+			for (; pit != population.end(); ++pit) {
+				if (**pit == *(pOffspring->parents.first)) {
+					population.erase(pit);
 					break;
 				}
-				population.insert(pit, *it);
 			}
 		}
 	};
@@ -83,24 +80,15 @@ namespace GA {
 		ReplaceWorstParent(CCmdLine& cmdLine) {}
 		virtual ~ReplaceWorstParent() {}
 
-		void replace(typename S::Vector& offsprings, typename S::Vector& population) {
-			typename S::Vector::iterator it = offsprings.begin();
-			for (; it != offsprings.end(); ++it) {
-				typename S::Ptr parent( *((*it)->parents.first) < *((*it)->parents.second) ? (*it)->parents.first : (*it)->parents.second );
-				typename S::Vector::iterator pit = population.begin();
-				for (; pit != population.end(); ++pit) {
-					if (**pit == *parent) {
-						population.erase(pit);
-						break;
-					}
-				}
-				pit = population.begin();
-				for (; pit != population.end(); ++pit) {
-					if (**it < **pit)
-						continue;
+	protected:
+		virtual void _remove(typename S::Ptr pOffspring, typename S::Vector& population) {
+			typename S::Ptr parent( *(pOffspring->parents.first) < *(pOffspring->parents.second) ? pOffspring->parents.first : pOffspring->parents.second );
+			typename S::Vector::iterator pit = population.begin();
+			for (; pit != population.end(); ++pit) {
+				if (**pit == *parent) {
+					population.erase(pit);
 					break;
 				}
-				population.insert(pit, *it);
 			}
 		}
 	};

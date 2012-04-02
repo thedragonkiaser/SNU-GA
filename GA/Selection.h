@@ -46,6 +46,7 @@ namespace GA {
 			typename S::CostType C = (worst - best) / (_threshold - 1);
 
 			this->_sum = 0;
+			this->_f.clear();
 			this->_f.reserve(population.size());
 			S::Vector::iterator it = population.begin();
 			for (;it != population.end(); ++it) {
