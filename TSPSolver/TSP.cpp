@@ -5,8 +5,8 @@
 using namespace std;
 
 namespace TSP {
-	float getQuality(const vector<int>& sol, const Node& origin, const vector<Node>& cities) {
-		float qual = 0.0;
+	float getCost(const vector<int>& sol, const Node& origin, const vector<Node>& cities) {
+		float cost = 0.0;
 
 		float last_x = origin.x;
 		float last_y = origin.y;
@@ -15,7 +15,7 @@ namespace TSP {
 			const Node& city = cities[*it - 1];
 			float diff_x = city.x - last_x;
 			float diff_y = city.y - last_y;
-			qual += sqrt(diff_x * diff_x + diff_y * diff_y);
+			cost += sqrt(diff_x * diff_x + diff_y * diff_y);
 
 			last_x = city.x;
 			last_y = city.y;
@@ -24,9 +24,9 @@ namespace TSP {
 
 		float diff_x = last_x - origin.x;
 		float diff_y = last_y - origin.y;
-		qual += sqrt(diff_x * diff_x + diff_y * diff_y);
+		cost += sqrt(diff_x * diff_x + diff_y * diff_y);
 
-		return -qual;
+		return cost;
 	}
 	
 	bool repairSolution(vector<int>& sol) {

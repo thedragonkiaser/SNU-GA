@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
 		for (int m=0; m<nCitySize; ++m)
 			p->genotype.push_back(m+1);
 		TSP::scrambleSolution(p->genotype);
-		p->quality = TSP::getQuality(p->genotype, origin, cities);
+		p->cost = TSP::getCost(p->genotype, origin, cities);
 		population.push_back(p);
 	}
 	sort(population.begin(), population.end(), [](Solution::Ptr& lhs, Solution::Ptr& rhs) {
@@ -140,14 +140,14 @@ int main(int argc, char* argv[]) {
 		for (int i=0; i<k; ++i) {
 			Solution::Pair parents = pSelector->select(population);
 			Solution::Ptr pOffspring = pCrossover->crossover(parents);
-			pOffspring->quality = TSP::getQuality(pOffspring->genotype, origin, cities);
+			pOffspring->cost = TSP::getCost(pOffspring->genotype, origin, cities);
 
 			bool isMutated = pMutator->mutate(pOffspring);
 			bool isRepaired = false;
 			if (bRepair)
 				isRepaired = TSP::repairSolution(pOffspring->genotype);
 			if (isMutated || isRepaired)
-				pOffspring->quality = TSP::getQuality(pOffspring->genotype, origin, cities);
+				pOffspring->cost = TSP::getCost(pOffspring->genotype, origin, cities);
 			offsprings.push_back(pOffspring);
 		}
 		pReplacer->replace(offsprings, population);

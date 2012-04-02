@@ -4,6 +4,7 @@
 #include "../lib/CmdLine.h"
 #include "GA.h"
 #include <set>
+#include <vector>
 
 namespace GA {
 	template <typename S>
@@ -59,7 +60,7 @@ namespace GA {
 							break;
 						}
 					}
-				} while (nIdx == i);
+				} while (nIdx != i);
 				++nToggle;
 			}
 			return p;

@@ -6,20 +6,20 @@
 #include <vector>
 
 namespace GA {
-	template <typename T, typename Q>
+	template <typename T, typename C>
 	struct Solution {
-		typedef std::shared_ptr< Solution<T, Q> > Ptr;
+		typedef std::shared_ptr< Solution<T, C> > Ptr;
 		typedef std::pair<Ptr, Ptr> Pair;
 		typedef std::vector<Ptr> Vector;
 
 		typedef T GeneType;
-		typedef Q QualityType;
+		typedef C CostType;
 
 		std::vector<T> genotype;
-		Q quality;
+		C cost;
 
-		bool operator <(const Solution<T, Q>& r) const {
-			return this->quality < r.quality;
+		bool operator <(const Solution<T, C>& r) const {
+			return this->cost > r.cost;
         }
 	};
 }

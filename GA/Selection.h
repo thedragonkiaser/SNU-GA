@@ -4,6 +4,8 @@
 #include "../lib/CmdLine.h"
 #include "../lib/util.h"
 #include "GA.h"
+#include <set>
+#include <vector>
 
 namespace GA {
 	template <typename S>
@@ -39,16 +41,16 @@ namespace GA {
 		virtual ~RouletteWheelSelector() {}
 
 		typename S::Pair select(typename S::Vector& population) {
-			typename S::QualityType best = population.back()->quality;
-			typename S::QualityType worst = population.front()->quality;
-			typename S::QualityType C = (worst - best) / (_threshold - 1);
+			typename S::CostType worst = population.front()->cost;
+			typename S::CostType best = population.back()->cost;
+			typename S::CostType C = (worst - best) / (_threshold - 1);
 
 			this->_sum = 0;
 			this->_f.reserve(population.size());
 			S::Vector::iterator it = population.begin();
 
 			while (it != population.end()) {
-				typename S::QualityType fitness = (worst - (*it)->quality) + C;
+				typename S::CostType fitness = (worst - (*it)->cost) + C;
 				this->_sum += fitness;
 				this->_f.push_back(fitness);
 				it++;
@@ -61,12 +63,12 @@ namespace GA {
 		}
 	private:
 		float _threshold;
-		typename S::QualityType _sum;
-		std::vector<typename S::QualityType> _f;
+		typename S::CostType _sum;
+		std::vector<typename S::CostType> _f;
 
 		int _pick() {
-			typename S::QualityType r = ((typename S::QualityType)rand() / (typename S::QualityType)RAND_MAX) * _sum;
-			typename S::QualityType s = 0;
+			typename S::CostType r = ((typename S::CostType)rand() / (typename S::CostType)RAND_MAX) * _sum;
+			typename S::CostType s = 0;
 
 			int nLen = this->_f.size();
 			for (int i=0; i<nLen; ++i) {
@@ -81,7 +83,7 @@ namespace GA {
 	class TournamentSelector : public SelectionOp<S> {
 	public:
 		TournamentSelector(CCmdLine& cmdLine) {
-			_threshold = MyUtil::strTo<float>( cmdLine.GetArgument("-S", 1) );
+			_threshold = MyUtil::strTo<float>( cmdLine.GetArgument("-S", 1) ) * 100;
 			_exp = MyUtil::strTo<int>( cmdLine.GetArgument("-S", 2) );
 		}
 		virtual ~TournamentSelector() {}
@@ -98,32 +100,31 @@ namespace GA {
 
 		int _pick(typename S::Vector& population) {
 			int nSize = (int)pow((double)2, this->_exp);
-			std::vector<int> indice;
-			indice.reserve(nSize);
-			for (int i=0; i<nSize; ++i)
-				indice.push_back(i);
+			while (nSize > (int)population.size()) {
+				this->_exp--;
+				nSize = (int)pow((double)2, this->_exp);
+			}
+
+			std::set<int> indice;
+			while (indice.size() != nSize)
+				indice.insert( rand() % population.size() );
 
 			for (int i=0; i<this->_exp; ++i) {
-				std::vector<int> temp;
-				temp.reserve( (int)pow((double)2, this->_exp - i - 1) );
-				for (int k=0; k<(int)indice.size(); k+=2) {
+				std::set<int> temp;
+				std::set<int>::iterator it = indice.begin();
+				while (it != indice.end()) {
+					int idx1 = *it;	++it;
+					int idx2 = *it; ++it;
 					int r = rand() % 100;
-					if (this->_threshold > r) {
-						if (*population[k] < *population[k+1])
-							temp.push_back(k+1);
-						else
-							temp.push_back(k); 
-					}
-					else {
-						if (*population[k] < *population[k+1])
-							temp.push_back(k);
-						else
-							temp.push_back(k+1); 
-					}
+
+					if (this->_threshold > r)
+						temp.insert( (*population[idx1] < *population[idx2]) ? idx2 : idx1 );
+					else
+						temp.insert( (*population[idx1] < *population[idx2]) ? idx1 : idx2 );
 				}
 				indice = temp;
 			}
-			return indice.front();
+			return *indice.begin();
 		}
 	};
 }
