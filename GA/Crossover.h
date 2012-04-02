@@ -90,10 +90,10 @@ namespace GA {
 			std::set<typename S::GeneType> values;
 
 			int nLen = p1.size();
-			int s1 = rand() % nLen;
-			int s2 = rand() % nLen;
+			int s1 = rand() % (nLen + 1);
+			int s2 = rand() % (nLen + 1);
 			while (s1 == s2)
-				s2 = rand() %nLen;
+				s2 = rand() % (nLen + 1);
 
 			if (s1 > s2)
 				swap(s1, s2);
@@ -139,10 +139,10 @@ protected:
 			std::set<typename S::GeneType> values;
 
 			int nLen = p1.size();
-			int s1 = rand() % nLen;
-			int s2 = rand() % nLen;
+			int s1 = rand() % (nLen + 1);
+			int s2 = rand() % (nLen + 1);
 			while (s1 == s2)
-				s2 = rand() %nLen;
+				s2 = rand() % (nLen + 1);
 
 			if (s1 > s2)
 				swap(s1, s2);

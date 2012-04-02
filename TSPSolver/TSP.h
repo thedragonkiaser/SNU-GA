@@ -7,7 +7,7 @@ namespace TSP {
 		float x, y;
 	};
 
-	extern float getCost(const std::vector<int>& sol, const TSP::Node& origin, const std::vector<TSP::Node>& cities);
+	extern float getCost(const std::vector<int>& sol, const std::vector< std::vector<float> >& distance);
 	extern bool repairSolution(std::vector<int>& sol);
 	extern void scrambleSolution(std::vector<int>& sol);
 	extern void scrambleSolution(std::vector<int>& sol, int nStart, int nEnd);

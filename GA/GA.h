@@ -13,10 +13,11 @@ namespace GA {
 		typedef std::pair<Ptr, Ptr> Pair;
 		typedef std::vector<Ptr> Vector;
 
+		typedef std::vector<T> ChromosomeType;
 		typedef T GeneType;
 		typedef C CostType;
 
-		std::vector<T> genotype;
+		ChromosomeType genotype;
 		typename Solution<T, C>::Pair parents;
 		C cost;
 

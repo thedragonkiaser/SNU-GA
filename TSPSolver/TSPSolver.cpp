@@ -23,26 +23,30 @@ typedef GA::CrossoverOp<Solution> CrossoverOp;
 typedef GA::MutationOp<Solution> MutationOp;
 typedef GA::ReplacementOp<Solution> ReplacementOp;
 
-void parseInput(string sInputFile, TSP::Node& origin, vector<TSP::Node>& cities) {
+int parseInput(string sInputFile, vector< vector<float> >& matrix) {
+	int nNodes = 0;
+	vector<TSP::Node> cities;
+
 	ifstream fin;
 	fin.open(sInputFile);
 	if (fin.is_open()) {
 		string sLine;
 		getline(fin, sLine);
-		int nNodes = MyUtil::strTo<int>(sLine);
+		nNodes = MyUtil::strTo<int>(sLine);
 		cities.reserve(nNodes);
 
 		getline(fin, sLine);
 		size_t pos = sLine.find(" ");
-		origin.id = 0;
-		origin.x = MyUtil::strTo<float>(sLine.substr(0, pos));
-		origin.y = MyUtil::strTo<float>(sLine.substr(pos + 1));
+		TSP::Node city;
+		city.id = 0;
+		city.x = MyUtil::strTo<float>(sLine.substr(0, pos));
+		city.y = MyUtil::strTo<float>(sLine.substr(pos + 1));
+		cities.push_back(city);
 		
 		for (int i=0; i<nNodes; ++i) {
 			getline(fin, sLine);
 			pos = sLine.find(" ");
 
-			TSP::Node city;
 			city.id = i + 1;
 			city.x = MyUtil::strTo<float>(sLine.substr(0, pos));
 			city.y = MyUtil::strTo<float>(sLine.substr(pos + 1));
@@ -51,15 +55,46 @@ void parseInput(string sInputFile, TSP::Node& origin, vector<TSP::Node>& cities)
 			
 		fin.close();
 	}
+
+	int nSize = (int)cities.size();
+	matrix.reserve(nSize);
+	for (int i=0; i<nSize; ++i) {
+		vector<float> v(nSize);
+		TSP::Node& city = cities[i];
+		for (int k=0; k<nSize; ++k) {
+			float diff_x = cities[k].x - city.x;
+			float diff_y = cities[k].y - city.y;
+			v[k] = sqrt(diff_x * diff_x + diff_y * diff_y);
+		}
+		matrix.push_back(v);
+	}
+
+	return nNodes;
 }
 
-void writeResult(string sOutputFile) {
+#define _TEST_
+void writeResult(string sOutputFile, Solution::Ptr pSol, int argc, char* argv[], int nGenerations) {
 	ofstream fout;
-	fout.open(sOutputFile);
+#if defined(_TEST_)
+	fout.open(sOutputFile, fstream::out | fstream::app);
+#elif
+	fout.open(sOutputFile, fstream::out | fstream::truc);
+#endif
 	if (fout.is_open()) {
-//		for_each(cities.begin(), cities.end(), [&fout](TSP::Node& n) {
-//			fout << n.id << " - " << n.x << ", " << n.y << endl;
-//		});			
+#if defined(_TEST_)
+		for (int i=0; i<argc; ++i)
+			fout << argv[i] << " ";
+		fout << endl;
+		fout << nGenerations << " Generations" << endl;
+#endif
+		fout.precision(4);
+		fout << pSol->cost << endl;
+
+		for_each(pSol->genotype.begin(), pSol->genotype.end(), [&fout](Solution::GeneType g) {
+			fout << g << " ";
+		});
+		fout << endl;
+
 		fout.close();
 	}
 }
@@ -80,9 +115,8 @@ int main(int argc, char* argv[]) {
 	string sInputFile( cmdLine.GetArgument("-i", 0) );
 	string sOutputFile( cmdLine.GetArgument("-o", 0) );
 
-	TSP::Node origin;
-	vector<TSP::Node> cities;
-	parseInput(sInputFile, origin, cities);
+	vector< vector<float> > distance;
+	int nCities = parseInput(sInputFile, distance);
 //	preprocess(cities);
 	
 	SelectionOp* pSelector	= SelectionOp::Create(cmdLine);
@@ -90,7 +124,6 @@ int main(int argc, char* argv[]) {
 	MutationOp* pMutator	= MutationOp::Create(cmdLine);
 	ReplacementOp* pReplacer= ReplacementOp::Create(cmdLine);
 
-	int nCitySize = cities.size();
 	// set time limit
 	time_t tLimit = 0;
 	if (cmdLine.HasSwitch("-t")) {
@@ -103,14 +136,14 @@ int main(int argc, char* argv[]) {
 		mTimeLimit[50] = 59500;
 		mTimeLimit[100] = 179500;
 		
-		map<int, int>::iterator it = mTimeLimit.find(nCitySize);
+		map<int, int>::iterator it = mTimeLimit.find(nCities);
 		if (it != mTimeLimit.end())
-			tLimit = mTimeLimit[cities.size()];
+			tLimit = mTimeLimit[nCities];
 	}
 	tLimit += tCurrent;
 
 	// main routine
-	int n = 10 * nCitySize;
+	int n = 50;
 	if (cmdLine.HasSwitch("-n"))
 		n = MyUtil::strTo<int>( cmdLine.GetArgument("-n", 0) );
 	int k = 1;
@@ -123,11 +156,11 @@ int main(int argc, char* argv[]) {
 	population.reserve(n);
 	for (int i=0; i<n; ++i) {
 		Solution::Ptr p(new Solution);
-		p->genotype.reserve(nCitySize);
-		for (int m=0; m<nCitySize; ++m)
+		p->genotype.reserve(nCities);
+		for (int m=0; m<nCities; ++m)
 			p->genotype.push_back(m+1);
 		TSP::scrambleSolution(p->genotype);
-		p->cost = TSP::getCost(p->genotype, origin, cities);
+		p->cost = TSP::getCost(p->genotype, distance);
 		population.push_back(p);
 	}
 	sort(population.begin(), population.end(), [](Solution::Ptr& lhs, Solution::Ptr& rhs) {
@@ -135,28 +168,30 @@ int main(int argc, char* argv[]) {
 	});
 
 	// main loop
+	int nGenerations = 0;
 	while (true) {
 		Solution::Vector offsprings;
 		for (int i=0; i<k; ++i) {
 			Solution::Pair parents = pSelector->select(population);
 			Solution::Ptr pOffspring = pCrossover->crossover(parents);
-			pOffspring->cost = TSP::getCost(pOffspring->genotype, origin, cities);
+			pOffspring->cost = TSP::getCost(pOffspring->genotype, distance);
 
 			bool isMutated = pMutator->mutate(pOffspring);
 			bool isRepaired = false;
 			if (bRepair)
 				isRepaired = TSP::repairSolution(pOffspring->genotype);
 			if (isMutated || isRepaired)
-				pOffspring->cost = TSP::getCost(pOffspring->genotype, origin, cities);
+				pOffspring->cost = TSP::getCost(pOffspring->genotype, distance);
 			offsprings.push_back(pOffspring);
 		}
 		pReplacer->replace(offsprings, population);
-
+		++nGenerations;
+		//cout << nGenerations << " " << population.size() << endl;
 		if (MyUtil::getTime() > tLimit)
 			break;
 	}
 
-	writeResult(sOutputFile);
+	writeResult(sOutputFile, population.front(), argc, argv, nGenerations);
 
 	return 0;
 }

@@ -38,14 +38,14 @@ namespace GA {
 		void replace(typename S::Vector& offsprings, typename S::Vector& population) {
 			typename S::Vector::iterator it = offsprings.begin();
 			for (; it != offsprings.end(); ++it) {
+				population.pop_back();
 				typename S::Vector::iterator pit = population.begin();
 				for (; pit != population.end(); ++pit) {
 					if (**it < **pit)
-						continue;
-					population.insert(pit, *it);
-					population.pop_back();
+						continue;	
 					break;
 				}
+				population.insert(pit, *it);
 			}
 		}
 	};
@@ -70,9 +70,9 @@ namespace GA {
 				for (; pit != population.end(); ++pit) {
 					if (**it < **pit)
 						continue;
-					population.insert(pit, *it);
 					break;
 				}
+				population.insert(pit, *it);
 			}
 		}
 	};
@@ -98,9 +98,9 @@ namespace GA {
 				for (; pit != population.end(); ++pit) {
 					if (**it < **pit)
 						continue;
-					population.insert(pit, *it);
 					break;
 				}
+				population.insert(pit, *it);
 			}
 		}
 	};
