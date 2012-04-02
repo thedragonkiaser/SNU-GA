@@ -171,8 +171,15 @@ int main(int argc, char* argv[]) {
 	int nGenerations = 0;
 	while (true) {
 		Solution::Vector offsprings;
+		offsprings.reserve(k);
+
+		vector<Solution::Pair> parentsVec;
+		parentsVec.reserve(k);
+
 		for (int i=0; i<k; ++i) {
 			Solution::Pair parents = pSelector->select(population);
+			parentsVec.push_back(parents);
+
 			Solution::Ptr pOffspring = pCrossover->crossover(parents);
 			pOffspring->cost = TSP::getCost(pOffspring->genotype, distance);
 
@@ -184,7 +191,7 @@ int main(int argc, char* argv[]) {
 				pOffspring->cost = TSP::getCost(pOffspring->genotype, distance);
 			offsprings.push_back(pOffspring);
 		}
-		pReplacer->replace(offsprings, population);
+		pReplacer->replace(offsprings, parentsVec, population);
 		++nGenerations;
 		//cout << nGenerations << " " << population.size() << endl;
 		if (MyUtil::getTime() > tLimit)

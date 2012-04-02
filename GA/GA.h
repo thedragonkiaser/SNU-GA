@@ -18,7 +18,6 @@ namespace GA {
 		typedef C CostType;
 
 		ChromosomeType genotype;
-		typename Solution<T, C>::Pair parents;
 		C cost;
 
 		bool operator <(const Solution<T, C>& r) const {

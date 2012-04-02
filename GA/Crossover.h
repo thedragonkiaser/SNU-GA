@@ -20,7 +20,6 @@ namespace GA {
 			S::Ptr p(new S);
 			p->genotype.reserve(parents.first->genotype.size());
 			p->genotype.resize(parents.first->genotype.size());
-			p->parents = parents;
 
 			this->_crossover(parents, p);
 

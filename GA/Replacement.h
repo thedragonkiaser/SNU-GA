@@ -15,17 +15,18 @@ namespace GA {
 			Crowding
 		};
 	public:
-		virtual void replace(typename S::Vector& offsprings, typename S::Vector& population) {
-			typename S::Vector::iterator it = offsprings.begin();
-			for (; it != offsprings.end(); ++it) {
-				this->_remove(*it, population);
+		virtual void replace(typename S::Vector& offsprings, std::vector<typename S::Pair> parents, typename S::Vector& population) {
+			int nSize = (int)offsprings.size();
+			for (int i=0; i<nSize; ++i) {
+				typename S::Ptr pOffspring(offsprings[i]);
+				this->_remove(pOffspring, parents[i], population);
 
 				typename S::Vector::iterator pit = population.begin();
 				for (; pit != population.end(); ++pit) {
-					if (**it > **pit)
+					if (*pOffspring > **pit)
 						break;
 				}
-				population.insert(pit, *it);
+				population.insert(pit, pOffspring);
 			}
 		}
 
@@ -41,7 +42,7 @@ namespace GA {
 		}
 
 	protected:
-		virtual void _remove(typename S::Ptr pOffspring, typename S::Vector& population) = 0;
+		virtual void _remove(typename S::Ptr pOffspring, typename S::Pair& parents, typename S::Vector& population) = 0;
 	};
 
 	template <typename S>
@@ -51,7 +52,7 @@ namespace GA {
 		virtual ~ReplaceWorst() {}
 
 	protected:
-		virtual void _remove(typename S::Ptr pOffspring, typename S::Vector& population) {
+		virtual void _remove(typename S::Ptr pOffspring, typename S::Pair& parents, typename S::Vector& population) {
 			population.pop_back();
 		}
 	};
@@ -63,10 +64,10 @@ namespace GA {
 		virtual ~ReplaceParent() {}
 
 	protected:
-		virtual void _remove(typename S::Ptr pOffspring, typename S::Vector& population) {
+		virtual void _remove(typename S::Ptr pOffspring, typename S::Pair& parents, typename S::Vector& population) {
 			typename S::Vector::iterator pit = population.begin();
 			for (; pit != population.end(); ++pit) {
-				if (**pit == *(pOffspring->parents.first)) {
+				if (**pit == *(parents.first)) {
 					population.erase(pit);
 					break;
 				}
@@ -81,8 +82,8 @@ namespace GA {
 		virtual ~ReplaceWorstParent() {}
 
 	protected:
-		virtual void _remove(typename S::Ptr pOffspring, typename S::Vector& population) {
-			typename S::Ptr parent( *(pOffspring->parents.first) < *(pOffspring->parents.second) ? pOffspring->parents.first : pOffspring->parents.second );
+		virtual void _remove(typename S::Ptr pOffspring, typename S::Pair& parents, typename S::Vector& population) {
+			typename S::Ptr parent( *(parents.first) < *(parents.second) ? parents.first : parents.second );
 			typename S::Vector::iterator pit = population.begin();
 			for (; pit != population.end(); ++pit) {
 				if (**pit == *parent) {
