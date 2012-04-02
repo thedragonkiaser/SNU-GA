@@ -26,7 +26,7 @@ namespace TSP {
 		float diff_y = last_y - origin.y;
 		qual += sqrt(diff_x * diff_x + diff_y * diff_y);
 
-		return qual;
+		return -qual;
 	}
 	
 	bool repairSolution(vector<int>& sol) {

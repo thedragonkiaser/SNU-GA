@@ -12,8 +12,15 @@ namespace GA {
 		typedef std::pair<Ptr, Ptr> Pair;
 		typedef std::vector<Ptr> Vector;
 
+		typedef T GeneType;
+		typedef Q QualityType;
+
 		std::vector<T> genotype;
 		Q quality;
+
+		bool operator <(const Solution<T, Q>& r) const {
+			return this->quality < r.quality;
+        }
 	};
 }
 

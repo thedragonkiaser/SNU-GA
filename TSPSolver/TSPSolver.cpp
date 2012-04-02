@@ -1,4 +1,4 @@
-#include "../lib/getopt_pp.h"
+#include "../lib/CmdLine.h"
 #include "../lib/util.h"
 #include "../GA/GA.h"
 #include "../GA/Selection.h"
@@ -74,43 +74,49 @@ int main(int argc, char* argv[]) {
 	time_t tCurrent = MyUtil::getTime();
 	srand(time(NULL));
 
-	GetOpt::GetOpt_pp ops(argc, argv);	// parse cmd line arguments
+	CCmdLine cmdLine;
+	cmdLine.SplitLine(argc, argv);
 
-	string sInputFile, sOutputFile;
-	ops >> GetOpt::Option('i', "input", sInputFile)
-		>> GetOpt::Option('o', "output", sOutputFile);
+	string sInputFile( cmdLine.GetArgument("-i", 0) );
+	string sOutputFile( cmdLine.GetArgument("-o", 0) );
 
 	TSP::Node origin;
 	vector<TSP::Node> cities;
 	parseInput(sInputFile, origin, cities);
 //	preprocess(cities);
 	
-	SelectionOp* pSelector	= SelectionOp::Create(ops);
-	CrossoverOp* pCrossover	= CrossoverOp::Create(ops);
-	MutationOp* pMutator	= MutationOp::Create(ops);
-	ReplacementOp* pReplacer= ReplacementOp::Create(ops);
+	SelectionOp* pSelector	= SelectionOp::Create(cmdLine);
+	CrossoverOp* pCrossover	= CrossoverOp::Create(cmdLine);
+	MutationOp* pMutator	= MutationOp::Create(cmdLine);
+	ReplacementOp* pReplacer= ReplacementOp::Create(cmdLine);
 
 	int nCitySize = cities.size();
-	// set time limit		
-	map<int, int> mTimeLimit;
-	mTimeLimit[10] = 5500;
-	mTimeLimit[20] = 19500;
-	mTimeLimit[50] = 59500;
-	mTimeLimit[100] = 179500;
-	
+	// set time limit
 	time_t tLimit = 0;
-	map<int, int>::iterator it = mTimeLimit.find(nCitySize);
-	if (it == mTimeLimit.end())
-		ops >> GetOpt::Option('t', "time", tLimit);
-	else
-		tLimit = mTimeLimit[cities.size()];
+	if (cmdLine.HasSwitch("-t")) {
+		tLimit = MyUtil::strTo<time_t>( cmdLine.GetArgument("-t", 0) );
+	}
+	else {
+		map<int, int> mTimeLimit;
+		mTimeLimit[10] = 5500;
+		mTimeLimit[20] = 19500;
+		mTimeLimit[50] = 59500;
+		mTimeLimit[100] = 179500;
+		
+		map<int, int>::iterator it = mTimeLimit.find(nCitySize);
+		if (it != mTimeLimit.end())
+			tLimit = mTimeLimit[cities.size()];
+	}
 	tLimit += tCurrent;
 
 	// main routine
-	int n, k, nRepair;
-	ops >> GetOpt::Option('n', n, (int)(10 * nCitySize))
-		>> GetOpt::Option('k', k, 1)
-		>> GetOpt::Option('r', "repair", nRepair, 1);
+	int n = 10 * nCitySize;
+	if (cmdLine.HasSwitch("-n"))
+		n = MyUtil::strTo<int>( cmdLine.GetArgument("-n", 0) );
+	int k = 1;
+	if (cmdLine.HasSwitch("-k"))
+		k = MyUtil::strTo<int>( cmdLine.GetArgument("-k", 0) );
+	bool bRepair = !cmdLine.HasSwitch("-noRepair");	
 
 	// generate initial solutions
 	Solution::Vector population;
@@ -125,7 +131,7 @@ int main(int argc, char* argv[]) {
 		population.push_back(p);
 	}
 	sort(population.begin(), population.end(), [](Solution::Ptr& lhs, Solution::Ptr& rhs) {
-		return lhs->quality < rhs->quality;
+		return *lhs < *rhs;
 	});
 
 	// main loop
@@ -138,7 +144,7 @@ int main(int argc, char* argv[]) {
 
 			bool isMutated = pMutator->mutate(pOffspring);
 			bool isRepaired = false;
-			if (nRepair == 1)
+			if (bRepair)
 				isRepaired = TSP::repairSolution(pOffspring->genotype);
 			if (isMutated || isRepaired)
 				pOffspring->quality = TSP::getQuality(pOffspring->genotype, origin, cities);

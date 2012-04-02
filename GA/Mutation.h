@@ -1,7 +1,7 @@
 #if !defined(_MUTATION_H_)
 #define _MUTATION_H_
 
-#include "../lib/getopt_pp.h"
+#include "../lib/CmdLine.h"
 #include "GA.h"
 
 namespace GA {
@@ -14,15 +14,15 @@ namespace GA {
 	public:
 		virtual bool mutate(typename S::Ptr pSolution) = 0;
 
-		static MutationOp<S>* Create(GetOpt::GetOpt_pp& ops) {
-			return new UniformMutator<S>(ops);
+		static MutationOp<S>* Create(CCmdLine& cmdLine) {
+			return new UniformMutator<S>(cmdLine);
 		}
 	};
 
 	template <typename S>
 	class UniformMutator : public MutationOp<S> {
 	public:
-		UniformMutator(GetOpt::GetOpt_pp& ops) {}
+		UniformMutator(CCmdLine& cmdLine) {}
 		virtual ~UniformMutator() {}
 
 		bool mutate(typename S::Ptr pSolution) { return false; }

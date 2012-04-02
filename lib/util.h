@@ -29,7 +29,7 @@ namespace MyUtil {
 	}
 
 	template<typename T>
-	std::string fromStr(T val) {
+	std::string toStr(T val) {
 		std::stringstream ss;
 		ss << val;
 		return ss.str();
