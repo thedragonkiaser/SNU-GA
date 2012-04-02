@@ -4,6 +4,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <algorithm>
 
 namespace GA {
 	template <typename T, typename C>
@@ -16,10 +17,17 @@ namespace GA {
 		typedef C CostType;
 
 		std::vector<T> genotype;
+		typename Solution<T, C>::Pair parents;
 		C cost;
 
 		bool operator <(const Solution<T, C>& r) const {
 			return this->cost > r.cost;
+        }
+		bool operator ==(const Solution<T, C>& other) const {
+			return equal(this->genotype.begin(), this->genotype.end(), other.genotype.begin());
+        }
+		bool operator !=(const Solution<T, C>& other) const {
+			return !(*this == other);
         }
 	};
 }

@@ -16,7 +16,16 @@ namespace GA {
 			PMX,
 		};
 	public:
-		virtual typename S::Ptr crossover(typename S::Pair& parents) = 0;
+		virtual typename S::Ptr crossover(typename S::Pair& parents) {
+			S::Ptr p(new S);
+			p->genotype.reserve(parents.first->genotype.size());
+			p->genotype.resize(parents.first->genotype.size());
+			p->parents = parents;
+
+			this->_crossover(parents, p);
+
+			return p;
+		};
 
 		static CrossoverOp<S>* Create(CCmdLine& cmdLine) {
 			int mode = MyUtil::strTo<int>( cmdLine.GetArgument("-X", 0) );
@@ -27,6 +36,9 @@ namespace GA {
 			}
 			return NULL;
 		}
+
+	protected:
+		virtual void _crossover(typename S::Pair& parents, typename S::Ptr p) = 0;
 	};
 
 	template <typename S>
@@ -35,14 +47,13 @@ namespace GA {
 		CycleCrossover(CCmdLine& cmdLine) {}
 		virtual ~CycleCrossover() {}
 
-		typename S::Ptr crossover(typename S::Pair& parents) {
-			int nToggle = 0;
+	protected:
+		void _crossover(typename S::Pair& parents, typename S::Ptr p) {
 			std::vector<typename S::GeneType>* _parents[2] = {&parents.first->genotype, &parents.second->genotype};
 
+			int nToggle = 0;
 			int nLen = parents.first->genotype.size();
-			S::Ptr p(new S);
-			p->genotype.reserve(nLen);
-			p->genotype.resize(nLen);
+
 			std::vector<int> indice(nLen, FALSE);
 			for (int i=0; i<nLen; ++i) {
 				if (indice[i] == TRUE)
@@ -63,7 +74,6 @@ namespace GA {
 				} while (nIdx != i);
 				++nToggle;
 			}
-			return p;
 		}
 	};
 
@@ -73,17 +83,13 @@ namespace GA {
 		OrderCrossover(CCmdLine& cmdLine) {}
 		virtual ~OrderCrossover() {}
 
-		typename S::Ptr crossover(typename S::Pair& parents) {
+	protected:
+		void _crossover(typename S::Pair& parents, typename S::Ptr p) {
 			std::vector<typename S::GeneType>& p1 = parents.first->genotype;
 			std::vector<typename S::GeneType>& p2 = parents.second->genotype;
-
-			int nLen = p1.size();
-			S::Ptr p(new S);
-			p->genotype.reserve(nLen);
-			p->genotype.resize(nLen);
-
 			std::set<typename S::GeneType> values;
 
+			int nLen = p1.size();
 			int s1 = rand() % nLen;
 			int s2 = rand() % nLen;
 			while (s1 == s2)
@@ -117,8 +123,6 @@ namespace GA {
 					p->genotype[i] = p2[i];
 				values.insert(p->genotype[i]);
 			}
-
-			return p;
 		}
 	};
 
@@ -128,17 +132,13 @@ namespace GA {
 		PMXCrossover(CCmdLine& cmdLine) {}
 		virtual ~PMXCrossover() {}
 
-		typename S::Ptr crossover(typename S::Pair& parents) {
+protected:
+		void _crossover(typename S::Pair& parents, typename S::Ptr p) {
 			std::vector<typename S::GeneType>& p1 = parents.first->genotype;
 			std::vector<typename S::GeneType>& p2 = parents.second->genotype;
-
-			int nLen = p1.size();
-			S::Ptr p(new S);
-			p->genotype.reserve(nLen);
-			p->genotype.resize(nLen);
-
 			std::set<typename S::GeneType> values;
 
+			int nLen = p1.size();
 			int s1 = rand() % nLen;
 			int s2 = rand() % nLen;
 			while (s1 == s2)
@@ -176,8 +176,6 @@ namespace GA {
 					p->genotype[i] = p2[i];
 				values.insert(p->genotype[i]);
 			}
-
-			return p;
 		}
 	};
 }

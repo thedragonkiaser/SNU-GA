@@ -41,19 +41,17 @@ namespace GA {
 		virtual ~RouletteWheelSelector() {}
 
 		typename S::Pair select(typename S::Vector& population) {
-			typename S::CostType worst = population.front()->cost;
-			typename S::CostType best = population.back()->cost;
+			typename S::CostType best = population.front()->cost;
+			typename S::CostType worst = population.back()->cost;
 			typename S::CostType C = (worst - best) / (_threshold - 1);
 
 			this->_sum = 0;
 			this->_f.reserve(population.size());
 			S::Vector::iterator it = population.begin();
-
-			while (it != population.end()) {
+			for (;it != population.end(); ++it) {
 				typename S::CostType fitness = (worst - (*it)->cost) + C;
 				this->_sum += fitness;
 				this->_f.push_back(fitness);
-				it++;
 			}
 
 			typename S::Ptr pFather = population[this->_pick()];

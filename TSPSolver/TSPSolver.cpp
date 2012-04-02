@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
 		population.push_back(p);
 	}
 	sort(population.begin(), population.end(), [](Solution::Ptr& lhs, Solution::Ptr& rhs) {
-		return *lhs < *rhs;
+		return *rhs < *lhs;
 	});
 
 	// main loop
