@@ -88,7 +88,7 @@ void writeResult(string sOutputFile, Solution::Ptr pSol, int argc, char* argv[],
 		fout << nGenerations << " Generations" << endl;
 #endif
 		fout.precision(4);
-		fout << pSol->cost << endl;
+		fout << fixed << pSol->cost << endl;
 
 		for_each(pSol->genotype.begin(), pSol->genotype.end(), [&fout](Solution::GeneType g) {
 			fout << g << " ";

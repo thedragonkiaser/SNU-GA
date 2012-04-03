@@ -173,16 +173,16 @@ namespace GA {
 	protected:
 		void _crossover(typename S::Pair& parents, typename S::Ptr p) {
 			typename S::ChromosomeType* _parents[2] = {&parents.first->genotype, &parents.second->genotype};
-			std::map< typename S::GeneType, std::set<typename S::GeneType> > adjsTable;
-			std::set<typename S::GeneType> keys;
+			std::map<int, std::set<int> > adjsTable;
+			std::set<int> keys;
 
 			for (int i=0; i<2; ++i) {
 				typename S::ChromosomeType& px = *_parents[i];
 				
 				int nLen = px.size();
 				for (int k=0; k<nLen; ++k) {
-					typename S::GeneType val = px[k];
-					std::set<typename S::GeneType>& s = adjsTable[val];
+					int val = px[k];
+					std::set<int>& s = adjsTable[val];
 					keys.insert(val);
 			
 					s.insert( (k == 0) ? px[nLen-1] : px[k-1] );
@@ -192,7 +192,7 @@ namespace GA {
 
 			typename S::ChromosomeType& px = *_parents[rand() % 2];
 			int nLen = px.size();
-			typename S::GeneType val = px[0];
+			int val = px[0];
 			for (int i=0; i<nLen; ++i) {
 				p->genotype[i] = val;
 
@@ -203,14 +203,14 @@ namespace GA {
 				for (; kit != keys.end(); ++kit)
 					adjsTable[ *kit ].erase(val);
 				
-				std::set<typename S::GeneType>& s = adjsTable[val];
-				std::set<typename S::GeneType>::iterator it = s.begin();
+				std::set<int>& s = adjsTable[val];
+				std::set<int>::iterator it = s.begin();
 
-				typename S::GeneType min = *it;
+				int min = *it;
 				unsigned int minSize = adjsTable[min].size();
 				
 				for (; it != s.end(); ++it) {
-					if (adjsTable[ *it ].size() <= minSize) {
+					if (adjsTable[ *it ].size() != 0 && adjsTable[ *it ].size() <= minSize) {
 						min = *it;
 						minSize = adjsTable[min].size();
 					}

@@ -48,7 +48,7 @@ namespace GA {
 
 			return make_pair(pFather, pMother);
 		}
-	private:
+	protected:
 		float _threshold;
 		typename S::CostType _sum;
 		std::vector<typename S::CostType> _f;
@@ -81,7 +81,7 @@ namespace GA {
 
 			return make_pair(pFather, pMother);
 		}
-	private:
+	protected:
 		float _threshold;
 		int _exp;
 
@@ -112,6 +112,36 @@ namespace GA {
 				indice = temp;
 			}
 			return *indice.begin();
+		}
+	};
+
+	template <typename S>
+	class RankBasedSelector : public RouletteWheelSelector<S> {
+	public:
+		RankBasedSelector(CCmdLine& cmdLine) : RouletteWheelSelector<S>(cmdLine) {
+			this->_threshold = MyUtil::strTo<float>( cmdLine.GetArgument("-S", 1) );
+			this->_maxFitness = MyUtil::strTo<float>( cmdLine.GetArgument("-S", 2) );
+			this->_minFitness = MyUtil::strTo<float>( cmdLine.GetArgument("-S", 3) );
+		}
+		virtual ~RankBasedSelector() {}
+
+		typename S::Pair select(typename S::Vector& population) {
+			this->_sum = 0;
+			this->_f.clear();
+			this->_f.reserve(population.size());
+
+			int pSize = (int)population.size();
+			typename S::CostType C = (this->_maxFitness - this->_minFitness) / (pSize - 1);
+			for (int i=0; i<pSize; ++i) {
+				typename S::CostType fitness = this->_maxFitness + i * C;
+				this->_sum += fitness;
+				this->_f.push_back(fitness);
+			}
+
+			typename S::Ptr pFather = population[this->_pick()];
+			typename S::Ptr pMother = population[this->_pick()];
+
+			return make_pair(pFather, pMother);
 		}
 	};
 
