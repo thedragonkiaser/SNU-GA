@@ -198,7 +198,7 @@ int main(int argc, char* argv[]) {
 			for (int it=0; it<population.size(); ++it)
 				sum += population[it]->cost;
 			cout.precision(4);
-			cout << fixed << population.front()->cost << " " << (float)(sum / population.size()) << endl;
+			cout << fixed << nGenerations << population.front()->cost << " " << (float)(sum / population.size()) << endl;
 		}
 		if (MyUtil::getTime() > tLimit)
 			break;
