@@ -8,12 +8,12 @@ namespace MyUtil {
 #if defined(linux)
 	#include <sys/time.h>
 
-    typedef long long time_t;
+    typedef unsigned long time_t;
 
 	time_t getTime() {
 		timeval tv;
 		gettimeofday(&tv, 0);
-		return tv.tv_sec * 1000000LL + tv.tv_usec;
+		return tv.tv_sec * 1000ul + tv.tv_usec/1000ul;
 	}
 #elif (defined(_WIN32) || defined(_WIN64))
 	#pragma comment(lib, "winmm.lib")
