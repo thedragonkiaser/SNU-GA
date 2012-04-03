@@ -174,54 +174,69 @@ namespace GA {
 		void _crossover(typename S::Pair& parents, typename S::Ptr p) {
 			typename S::ChromosomeType* _parents[2] = {&parents.first->genotype, &parents.second->genotype};
 
-			std::set<int> keys;
-			std::map<int, std::set<int> > adjsTable;
+			std::map<int, bool> occupied;
+			std::map<int, int> adjCounts;
+			std::map<int, std::vector<int> > adjNodes;
+
+			for (int i=0; i<parents.first->genotype.size(); ++i) {
+				int key = parents.first->genotype[i];
+				occupied[key] = false;
+				adjCounts[key] = 0;
+			}
+
 			for (int i=0; i<2; ++i) {
 				typename S::ChromosomeType& px = *_parents[i];
 				
 				int nLen = px.size();
 				for (int k=0; k<nLen; ++k) {
-					int val = px[k];
-					std::set<int>& s = adjsTable[val];
-					keys.insert(val);
-			
-					s.insert( (k == 0) ? px[nLen-1] : px[k-1] );
-					s.insert( (k == nLen-1) ? px[0] : px[k+1] );
+					std::vector<int>& v = adjNodes[ px[k] ];
+
+					int vals[2] = { (k == 0) ? px[nLen-1] : px[k-1], (k == nLen-1) ? px[0] : px[k+1] };
+					for (int m=0; m<2; ++m) {
+						std::vector<int>::iterator it = find(v.begin(), v.end(), vals[m]);
+						if (it == v.end()) {
+							v.push_back( vals[m] );
+							adjCounts[ px[k] ] += 1;
+						}
+					}
 				}
 			}
 
-			typename S::ChromosomeType& px = *_parents[rand() % 2];
+			typename S::ChromosomeType& px = *_parents[1];
 
-			int val = px[0];
+			int next = px[0];
 			int nLen = px.size();
-			std::set<int> values = keys;
 			for (int i=0; i<nLen; ++i) {
-				p->genotype[i] = val;
-				values.erase(val);
-				if (i == nLen - 1)
+				p->genotype[i] = next;
+				occupied[next] = true;
+				adjCounts[next] = 0;
+
+				if (i == nLen-1)
 					break;
 
-				std::set<int>::iterator kit = keys.begin();
-				for (; kit != keys.end(); ++kit)
-					adjsTable[ *kit ].erase(val);
+				std::vector<int>& v = adjNodes[ next ];
 
-				if (adjsTable[val].empty()) {
-					val = *values.begin();
-					continue;
-				}
+				next = -1;
+				int adjCount = 5;
+				for (int k=0; k<v.size(); ++k) {
+					if (occupied[ v[k] ])
+						continue;
 
-				std::set<int>& s = adjsTable[val];
-				typename std::set<int>::iterator it = s.begin();
-
-				int min = 0;
-				unsigned int minSize = 0;
-				for (; it != s.end(); ++it) {
-					if ( (minSize == 0) || (adjsTable[ *it ].size() != 0 && adjsTable[ *it ].size() <= minSize) ) {
-						min = *it;
-						minSize = adjsTable[min].size();
+					adjCounts[ v[k] ] -= 1;
+					if (adjCounts[ v[k] ] < adjCount) {
+						next = v[k];
+						adjCount = adjCounts[ v[k] ];
 					}
+					else if (adjCounts[ v[k] ] == adjCount && adjCount%2 == 0) 
+						next = v[k];
 				}
-				val = min;
+
+				int k=0;
+				while (next == -1) {
+					if (occupied[ px[k] ])
+						continue;
+					next = px[k];
+				}
 			}
 		}
 	};
