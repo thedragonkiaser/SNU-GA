@@ -18,10 +18,10 @@
 using namespace std;
 
 typedef GA::Solution<int, float> Solution;
-typedef GA::SelectionOp<Solution> SelectionOp;
-typedef GA::CrossoverOp<Solution> CrossoverOp;
-typedef GA::MutationOp<Solution> MutationOp;
-typedef GA::ReplacementOp<Solution> ReplacementOp;
+typedef GA::BaseSelector<Solution> SelectionOp;
+typedef GA::BaseCrossover<Solution> CrossoverOp;
+typedef GA::BaseMutator<Solution> MutationOp;
+typedef GA::BaseReplacer<Solution> ReplacementOp;
 
 int parseInput(string sInputFile, vector< vector<float> >& matrix) {
 	int nNodes = 0;
@@ -72,13 +72,13 @@ int parseInput(string sInputFile, vector< vector<float> >& matrix) {
 	return nNodes;
 }
 
-#define _TEST_
+//#define _TEST_
 void writeResult(string sOutputFile, Solution::Ptr pSol, int argc, char* argv[], int nGenerations) {
 	ofstream fout;
 #if defined(_TEST_)
 	fout.open(sOutputFile, fstream::out | fstream::app);
-#elif
-	fout.open(sOutputFile, fstream::out | fstream::truc);
+#else
+	fout.open(sOutputFile, fstream::out | fstream::trunc);
 #endif
 	if (fout.is_open()) {
 #if defined(_TEST_)
@@ -100,9 +100,9 @@ void writeResult(string sOutputFile, Solution::Ptr pSol, int argc, char* argv[],
 }
 
 void preprocess(vector<TSP::Node>& cities) {
-	sort(cities.begin(), cities.end(), [](TSP::Node& lhs, TSP::Node& rhs) {
-		return lhs.x < rhs.x;
-	});
+//	sort(cities.begin(), cities.end(), [](TSP::Node& lhs, TSP::Node& rhs) {
+//		return lhs.x < rhs.x;
+//	});
 }
 
 int main(int argc, char* argv[]) {
@@ -119,10 +119,10 @@ int main(int argc, char* argv[]) {
 	int nCities = parseInput(sInputFile, distance);
 //	preprocess(cities);
 	
-	SelectionOp* pSelector	= SelectionOp::Create(cmdLine);
-	CrossoverOp* pCrossover	= CrossoverOp::Create(cmdLine);
-	MutationOp* pMutator	= MutationOp::Create(cmdLine);
-	ReplacementOp* pReplacer= ReplacementOp::Create(cmdLine);
+	SelectionOp* pSelector	= GA::SelectionOp<Solution>::Create(cmdLine);
+	CrossoverOp* pCrossover	= GA::CrossoverOp<Solution>::Create(cmdLine);
+	MutationOp* pMutator	= GA::MutationOp<Solution>::Create(cmdLine);
+	ReplacementOp* pReplacer= GA::ReplacementOp<Solution>::Create(cmdLine);
 
 	// set time limit
 	time_t tLimit = 0;
@@ -159,13 +159,11 @@ int main(int argc, char* argv[]) {
 		p->genotype.reserve(nCities);
 		for (int m=0; m<nCities; ++m)
 			p->genotype.push_back(m+1);
-		TSP::scrambleSolution(p->genotype);
+		random_shuffle(p->genotype.begin(), p->genotype.end());
 		p->cost = TSP::getCost(p->genotype, distance);
 		population.push_back(p);
 	}
-	sort(population.begin(), population.end(), [](Solution::Ptr& lhs, Solution::Ptr& rhs) {
-		return *rhs < *lhs;
-	});
+	sort(population.begin(), population.end(), GA::SolutionPtrComp<Solution>());
 
 	// main loop
 	int nGenerations = 0;

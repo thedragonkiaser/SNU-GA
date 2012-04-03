@@ -6,36 +6,23 @@
 #include "GA.h"
 #include <set>
 #include <vector>
+#include <cmath>
+#include <utility>
+#include <cstdlib>
 
 namespace GA {
 	template <typename S>
-	class SelectionOp {
+	class BaseSelector {
 	public:
-		enum {
-			RouletteWheel = 0,
-			Tournament,
-			RankBased,
-			Sharing
-		};
-	public:
-		virtual typename S::Pair select(typename S::Vector& population) = 0;
+		BaseSelector() {}
 
-		static SelectionOp<S>* Create(CCmdLine& cmdLine) {
-			int mode = MyUtil::strTo<int>( cmdLine.GetArgument("-S", 0) );
-			switch (mode) {
-			case RouletteWheel: return new RouletteWheelSelector<S>(cmdLine);
-			case Tournament:	return new TournamentSelector<S>(cmdLine);
-			case RankBased:		return NULL;
-			case Sharing: return NULL;
-			}
-			return NULL;
-		}
+		virtual typename S::Pair select(typename S::Vector& population) = 0;
 	};
 
 	template <typename S>
-	class RouletteWheelSelector : public SelectionOp<S> {
+	class RouletteWheelSelector : public BaseSelector<S> {
 	public:
-		RouletteWheelSelector(CCmdLine& cmdLine) {
+		RouletteWheelSelector(CCmdLine& cmdLine) : BaseSelector<S>() {
 			_threshold = MyUtil::strTo<float>( cmdLine.GetArgument("-S", 1) );
 		}
 		virtual ~RouletteWheelSelector() {}
@@ -48,7 +35,8 @@ namespace GA {
 			this->_sum = 0;
 			this->_f.clear();
 			this->_f.reserve(population.size());
-			S::Vector::iterator it = population.begin();
+
+			typename S::Vector::iterator it = population.begin();
 			for (;it != population.end(); ++it) {
 				typename S::CostType fitness = (worst - (*it)->cost) + C;
 				this->_sum += fitness;
@@ -79,9 +67,9 @@ namespace GA {
 	};
 
 	template <typename S>
-	class TournamentSelector : public SelectionOp<S> {
+	class TournamentSelector : public BaseSelector<S> {
 	public:
-		TournamentSelector(CCmdLine& cmdLine) {
+		TournamentSelector(CCmdLine& cmdLine) : BaseSelector<S>() {
 			_threshold = MyUtil::strTo<float>( cmdLine.GetArgument("-S", 1) ) * 100;
 			_exp = MyUtil::strTo<int>( cmdLine.GetArgument("-S", 2) );
 		}
@@ -124,6 +112,28 @@ namespace GA {
 				indice = temp;
 			}
 			return *indice.begin();
+		}
+	};
+
+	template <typename S>
+	class SelectionOp {
+	public:
+		enum {
+			RouletteWheel = 0,
+			Tournament,
+			RankBased,
+			Sharing
+		};
+	public:
+		static BaseSelector<S>* Create(CCmdLine& cmdLine) {
+			int mode = MyUtil::strTo<int>( cmdLine.GetArgument("-S", 0) );
+			switch (mode) {
+				case RouletteWheel: return new RouletteWheelSelector<S>(cmdLine);
+				case Tournament:	return new TournamentSelector<S>(cmdLine);
+				case RankBased:		return NULL;
+				case Sharing: return NULL;
+			}
+			return NULL;
 		}
 	};
 }

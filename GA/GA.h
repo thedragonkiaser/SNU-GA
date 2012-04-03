@@ -5,17 +5,17 @@
 #include <utility>
 #include <vector>
 #include <algorithm>
+#include <functional>
 
 namespace GA {
 	template <typename T, typename C>
 	struct Solution {
+		typedef T GeneType;
+		typedef C CostType;
+		typedef std::vector<T> ChromosomeType;
 		typedef std::shared_ptr< Solution<T, C> > Ptr;
 		typedef std::pair<Ptr, Ptr> Pair;
 		typedef std::vector<Ptr> Vector;
-
-		typedef std::vector<T> ChromosomeType;
-		typedef T GeneType;
-		typedef C CostType;
 
 		ChromosomeType genotype;
 		C cost;
@@ -32,6 +32,13 @@ namespace GA {
 		bool operator !=(const Solution<T, C>& other) const {
 			return !(*this == other);
         }
+	};
+
+	template <typename S>
+	struct SolutionPtrComp : std::unary_function<typename S::Ptr, bool> {
+		bool operator()(const typename S::Ptr& lhs, const typename S::Ptr& rhs) const {
+			return *rhs < *lhs;
+		}
 	};
 }
 

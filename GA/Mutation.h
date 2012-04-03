@@ -3,22 +3,17 @@
 
 #include "../lib/CmdLine.h"
 #include "GA.h"
+#include <algorithm>
+#include <cstdlib>
 
 namespace GA {
 	template <typename S>
-	class MutationOp {
+	class BaseMutator {
 	public:
-		enum {
-			Swap,
-			Insert,
-			Inversion,
-			Scramble,
-		};
-	public:
-		MutationOp(CCmdLine& cmdLine) {
+		BaseMutator(CCmdLine& cmdLine) {
 			_threshold = MyUtil::strTo<float>( cmdLine.GetArgument("-M", 1) ) * 1000;
 		}
-		virtual ~MutationOp() {}
+		virtual ~BaseMutator() {}
 
 		virtual bool mutate(typename S::Ptr pSolution) {
 			int r = rand() % 1000;
@@ -29,16 +24,6 @@ namespace GA {
 			return false;
 		}
 
-		static MutationOp<S>* Create(CCmdLine& cmdLine) {
-			int mode = MyUtil::strTo<int>( cmdLine.GetArgument("-M", 0) );
-			switch (mode) {
-			case Swap:		return new SwapMutation<S>(cmdLine);
-			case Insert:	return new InsertMutation<S>(cmdLine);
-			case Inversion:	return new InversionMutation<S>(cmdLine);
-			case Scramble:	return new ScrambleMutation<S>(cmdLine);
-			}
-			return NULL;
-		}
 	protected:
 		virtual void _mutate(typename S::Ptr pSolution) = 0;
 		virtual float _getThreshold() { return _threshold; }
@@ -46,9 +31,9 @@ namespace GA {
 	};
 	
 	template <typename S>
-	class SwapMutation : public MutationOp<S> {
+	class SwapMutation : public BaseMutator<S> {
 	public:
-		SwapMutation(CCmdLine& cmdLine) : MutationOp<S>(cmdLine) {}
+		SwapMutation(CCmdLine& cmdLine) : BaseMutator<S>(cmdLine) {}
 		virtual ~SwapMutation() {}
 
 	protected:
@@ -63,9 +48,9 @@ namespace GA {
 	};
 
 	template <typename S>
-	class InsertMutation : public MutationOp<S> {
+	class InsertMutation : public BaseMutator<S> {
 	public:
-		InsertMutation(CCmdLine& cmdLine) : MutationOp<S>(cmdLine) {}
+		InsertMutation(CCmdLine& cmdLine) : BaseMutator<S>(cmdLine) {}
 		virtual ~InsertMutation() {}
 
 	protected:
@@ -83,9 +68,9 @@ namespace GA {
 	};
 
 	template <typename S>
-	class InversionMutation : public MutationOp<S> {
+	class InversionMutation : public BaseMutator<S> {
 	public:
-		InversionMutation(CCmdLine& cmdLine) : MutationOp<S>(cmdLine) {}
+		InversionMutation(CCmdLine& cmdLine) : BaseMutator<S>(cmdLine) {}
 		virtual ~InversionMutation() {}
 
 	protected:
@@ -103,9 +88,9 @@ namespace GA {
 	};
 
 	template <typename S>
-	class ScrambleMutation : public MutationOp<S> {
+	class ScrambleMutation : public BaseMutator<S> {
 	public:
-		ScrambleMutation(CCmdLine& cmdLine) : MutationOp<S>(cmdLine) {}
+		ScrambleMutation(CCmdLine& cmdLine) : BaseMutator<S>(cmdLine) {}
 		virtual ~ScrambleMutation() {}
 
 	protected:
@@ -118,13 +103,29 @@ namespace GA {
 			if (s1 > s2)
 				swap(s1, s2);
 
-			int l = s2 - s1;
-			for (int i=s1; i<s2; ++i) {
-				if ( (rand() % 100) > 50 ) {
-					int k = rand() % l + s1;
-					swap(pSolution->genotype[i], pSolution->genotype[k]);
-				}
+			random_shuffle(pSolution->genotype.begin() + s1, pSolution->genotype.begin() + s2);
+		}
+	};
+
+	template <typename S>
+	class MutationOp {
+	public:
+		enum {
+			Swap,
+			Insert,
+			Inversion,
+			Scramble,
+		};
+	public:
+		static BaseMutator<S>* Create(CCmdLine& cmdLine) {
+			int mode = MyUtil::strTo<int>( cmdLine.GetArgument("-M", 0) );
+			switch (mode) {
+			case Swap:		return new SwapMutation<S>(cmdLine);
+			case Insert:	return new InsertMutation<S>(cmdLine);
+			case Inversion:	return new InversionMutation<S>(cmdLine);
+			case Scramble:	return new ScrambleMutation<S>(cmdLine);
 			}
+			return NULL;
 		}
 	};
 }

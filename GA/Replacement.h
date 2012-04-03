@@ -6,14 +6,7 @@
 
 namespace GA {
 	template <typename S>
-	class ReplacementOp {
-	public:
-		enum {
-			Worst = 0,
-			Parent,
-			WorstParent,
-			Crowding
-		};
+	class BaseReplacer {
 	public:
 		virtual void replace(typename S::Vector& offsprings, std::vector<typename S::Pair> parents, typename S::Vector& population) {
 			int nSize = (int)offsprings.size();
@@ -30,25 +23,14 @@ namespace GA {
 			}
 		}
 
-		static ReplacementOp<S>* Create(CCmdLine& cmdLine) {
-			int mode = MyUtil::strTo<int>( cmdLine.GetArgument("-R", 0) );
-			switch (mode) {
-			case Worst:			return new ReplaceWorst<S>(cmdLine);
-			case Parent:		return new ReplaceParent<S>(cmdLine);
-			case WorstParent:	return new ReplaceWorstParent<S>(cmdLine);
-			case Crowding:		return NULL;
-			}
-			return NULL;
-		}
-
 	protected:
 		virtual void _remove(typename S::Ptr pOffspring, typename S::Pair& parents, typename S::Vector& population) = 0;
 	};
 
 	template <typename S>
-	class ReplaceWorst : public ReplacementOp<S> {
+	class ReplaceWorst : public BaseReplacer<S> {
 	public:
-		ReplaceWorst(CCmdLine& cmdLine) {}
+		ReplaceWorst(CCmdLine& cmdLine) : BaseReplacer<S>() {}
 		virtual ~ReplaceWorst() {}
 
 	protected:
@@ -58,9 +40,9 @@ namespace GA {
 	};
 
 	template <typename S>
-	class ReplaceParent : public ReplacementOp<S> {
+	class ReplaceParent : public BaseReplacer<S> {
 	public:
-		ReplaceParent(CCmdLine& cmdLine) {}
+		ReplaceParent(CCmdLine& cmdLine) : BaseReplacer<S>() {}
 		virtual ~ReplaceParent() {}
 
 	protected:
@@ -76,9 +58,9 @@ namespace GA {
 	};
 
 	template <typename S>
-	class ReplaceWorstParent : public ReplacementOp<S> {
+	class ReplaceWorstParent : public BaseReplacer<S> {
 	public:
-		ReplaceWorstParent(CCmdLine& cmdLine) {}
+		ReplaceWorstParent(CCmdLine& cmdLine) : BaseReplacer<S>() {}
 		virtual ~ReplaceWorstParent() {}
 
 	protected:
@@ -93,6 +75,29 @@ namespace GA {
 			}
 		}
 	};
+
+	template <typename S>
+	class ReplacementOp {
+	public:
+		enum {
+			Worst = 0,
+			Parent,
+			WorstParent,
+			Crowding
+		};
+	public:
+		static BaseReplacer<S>* Create(CCmdLine& cmdLine) {
+			int mode = MyUtil::strTo<int>( cmdLine.GetArgument("-R", 0) );
+			switch (mode) {
+				case Worst:			return new ReplaceWorst<S>(cmdLine);
+				case Parent:		return new ReplaceParent<S>(cmdLine);
+				case WorstParent:	return new ReplaceWorstParent<S>(cmdLine);
+				case Crowding:		return NULL;
+			}
+			return NULL;
+		}
+	};
+
 }
 
 #endif

@@ -5,19 +5,14 @@
 #include "GA.h"
 #include <set>
 #include <vector>
+#include <cstdlib>
 
 namespace GA {
 	template <typename S>
-	class CrossoverOp {
-	public:
-		enum {
-			Cycle = 0,
-			Order,
-			PMX,
-		};
+	class BaseCrossover {
 	public:
 		virtual typename S::Ptr crossover(typename S::Pair& parents) {
-			S::Ptr p(new S);
+			typename S::Ptr p(new S);
 			p->genotype.reserve(parents.first->genotype.size());
 			p->genotype.resize(parents.first->genotype.size());
 
@@ -26,24 +21,14 @@ namespace GA {
 			return p;
 		};
 
-		static CrossoverOp<S>* Create(CCmdLine& cmdLine) {
-			int mode = MyUtil::strTo<int>( cmdLine.GetArgument("-X", 0) );
-			switch (mode) {
-			case Cycle: return new CycleCrossover<S>(cmdLine);
-			case Order: return new OrderCrossover<S>(cmdLine);
-			case PMX:	return new PMXCrossover<S>(cmdLine);
-			}
-			return NULL;
-		}
-
 	protected:
 		virtual void _crossover(typename S::Pair& parents, typename S::Ptr p) = 0;
 	};
 
 	template <typename S>
-	class CycleCrossover : public CrossoverOp<S> {
+	class CycleCrossover : public BaseCrossover<S> {
 	public:
-		CycleCrossover(CCmdLine& cmdLine) {}
+		CycleCrossover(CCmdLine& cmdLine) : BaseCrossover<S>() {}
 		virtual ~CycleCrossover() {}
 
 	protected:
@@ -53,15 +38,15 @@ namespace GA {
 			int nToggle = 0;
 			int nLen = parents.first->genotype.size();
 
-			std::vector<int> indice(nLen, FALSE);
+			std::vector<int> indice(nLen, 0);
 			for (int i=0; i<nLen; ++i) {
-				if (indice[i] == TRUE)
+				if (indice[i] == 1)
 					continue;
 
 				int nIdx = i;
 				do {
 					p->genotype[nIdx] = (_parents[nToggle % 2])->at(nIdx);
-					indice[nIdx] = TRUE;
+					indice[nIdx] = 1;
 					
 					typename S::GeneType val = (_parents[(nToggle + 1)% 2])->at(nIdx);
 					for (int k=0; k<nLen; ++k) {
@@ -77,15 +62,15 @@ namespace GA {
 	};
 
 	template <typename S>
-	class OrderCrossover : public CrossoverOp<S> {
+	class OrderCrossover : public BaseCrossover<S> {
 	public:
-		OrderCrossover(CCmdLine& cmdLine) {}
+		OrderCrossover(CCmdLine& cmdLine) : BaseCrossover<S>() {}
 		virtual ~OrderCrossover() {}
 
 	protected:
 		void _crossover(typename S::Pair& parents, typename S::Ptr p) {
-			std::vector<typename S::GeneType>& p1 = parents.first->genotype;
-			std::vector<typename S::GeneType>& p2 = parents.second->genotype;
+			typename S::ChromosomeType& p1 = parents.first->genotype;
+			typename S::ChromosomeType& p2 = parents.second->genotype;
 			std::set<typename S::GeneType> values;
 
 			int nLen = p1.size();
@@ -109,7 +94,7 @@ namespace GA {
 					continue;
 				}
 
-				std::set<typename S::GeneType>::iterator it = values.find(p2[i]);
+				typename std::set<typename S::GeneType>::iterator it = values.find(p2[i]);
 				if (it != values.end()) {
 					it = values.find(p2[k]);
 					while (it != values.end()) {
@@ -126,12 +111,12 @@ namespace GA {
 	};
 
 	template <typename S>
-	class PMXCrossover : public CrossoverOp<S> {
+	class PMXCrossover : public BaseCrossover<S> {
 	public:
-		PMXCrossover(CCmdLine& cmdLine) {}
+		PMXCrossover(CCmdLine& cmdLine) : BaseCrossover<S>() {}
 		virtual ~PMXCrossover() {}
 
-protected:
+	protected:
 		void _crossover(typename S::Pair& parents, typename S::Ptr p) {
 			std::vector<typename S::GeneType>& p1 = parents.first->genotype;
 			std::vector<typename S::GeneType>& p2 = parents.second->genotype;
@@ -155,7 +140,7 @@ protected:
 				if (i >=s1 && i<s2)
 					continue;
 
-				std::set<typename S::GeneType>::iterator it = values.find(p2[i]);
+				typename std::set<typename S::GeneType>::iterator it = values.find(p2[i]);
 				if (it != values.end()) {
 					typename S::GeneType val = p2[i];
 					do {
@@ -175,6 +160,26 @@ protected:
 					p->genotype[i] = p2[i];
 				values.insert(p->genotype[i]);
 			}
+		}
+	};
+
+	template <typename S>
+	class CrossoverOp {
+	public:
+		enum {
+			Cycle = 0,
+			Order,
+			PMX,
+		};
+	public:
+		static BaseCrossover<S>* Create(CCmdLine& cmdLine) {
+			int mode = MyUtil::strTo<int>( cmdLine.GetArgument("-X", 0) );
+			switch (mode) {
+				case Cycle: return new CycleCrossover<S>(cmdLine);
+				case Order: return new OrderCrossover<S>(cmdLine);
+				case PMX:	return new PMXCrossover<S>(cmdLine);
+			}
+			return NULL;
 		}
 	};
 }

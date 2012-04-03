@@ -33,6 +33,7 @@
 //#include "stdafx.h"
 
 #include "CmdLine.h"
+#include <cstring>
 //#include "crtdbg.h"
 
 /*------------------------------------------------------

@@ -1,5 +1,5 @@
 #include <vector>
-#include <math.h>
+#include <algorithm>
 #include "TSP.h"
 
 using namespace std;
@@ -19,19 +19,5 @@ namespace TSP {
 	
 	bool repairSolution(vector<int>& sol) {
 		return false;
-	}
-
-	void scrambleSolution(vector<int>& sol) {
-		scrambleSolution(sol, 0, sol.size());
-	}
-	
-	void scrambleSolution(vector<int>& sol, int nStart, int nEnd) {
-		int nLen = nEnd - nStart;
-		for (int i=nStart; i<nEnd; ++i) {
-			if ( (rand() % 100) > 50 ) {
-				int k = rand() % nLen + nStart;
-				swap(sol[i], sol[k]);
-			}
-		}
 	}
 }
