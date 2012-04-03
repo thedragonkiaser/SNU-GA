@@ -150,6 +150,7 @@ int main(int argc, char* argv[]) {
 	if (cmdLine.HasSwitch("-k"))
 		k = MyUtil::strTo<int>( cmdLine.GetArgument("-k", 0) );
 	bool bRepair = !cmdLine.HasSwitch("-noRepair");	
+	bool bPlot = !cmdLine.HasSwitch("-plot");	
 
 	// generate initial solutions
 	Solution::Vector population;
@@ -192,6 +193,13 @@ int main(int argc, char* argv[]) {
 		pReplacer->replace(offsprings, parentsVec, population);
 		++nGenerations;
 		//cout << nGenerations << " " << population.size() << endl;
+		if (bPlot && nGenerations % 1000 == 0) {
+			float sum = 0;
+			for (int it=0; it<population.size(); ++it)
+				sum += population[it]->cost;
+			cout.precision(4);
+			cout << fixed << population.front()->cost << " " << (float)(sum / population.size()) << endl;
+		}
 		if (MyUtil::getTime() > tLimit)
 			break;
 	}
