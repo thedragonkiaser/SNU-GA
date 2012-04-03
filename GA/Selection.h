@@ -143,6 +143,9 @@ namespace GA {
 
 			return make_pair(pFather, pMother);
 		}
+	protected:
+		float _maxFitness;
+		float _minFitness;
 	};
 
 	template <typename S>
@@ -160,7 +163,7 @@ namespace GA {
 			switch (mode) {
 				case RouletteWheel: return new RouletteWheelSelector<S>(cmdLine);
 				case Tournament:	return new TournamentSelector<S>(cmdLine);
-				case RankBased:		return NULL;
+				case RankBased:		return new RankBasedSelector<S>(cmdLine);
 				case Sharing: return NULL;
 			}
 			return NULL;

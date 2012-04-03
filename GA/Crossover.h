@@ -206,11 +206,14 @@ namespace GA {
 				std::set<int>& s = adjsTable[val];
 				std::set<int>::iterator it = s.begin();
 
-				int min = *it;
-				unsigned int minSize = adjsTable[min].size();
-				
+				int min = 0;
+				unsigned int minSize = 0;
 				for (; it != s.end(); ++it) {
-					if (adjsTable[ *it ].size() != 0 && adjsTable[ *it ].size() <= minSize) {
+					if ( (minSize == 0) ) {
+						min = *it;
+						minSize = adjsTable[min].size();
+					}
+					else if (adjsTable[ *it ].size() != 0 && adjsTable[ *it ].size() <= minSize) {
 						min = *it;
 						minSize = adjsTable[min].size();
 					}
