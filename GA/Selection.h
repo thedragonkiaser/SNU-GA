@@ -147,7 +147,7 @@ namespace GA {
 		float _maxFitness;
 		float _minFitness;
 	};
-
+	
 	template <typename S>
 	class SelectionOp {
 	public:
