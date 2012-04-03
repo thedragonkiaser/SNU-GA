@@ -4,6 +4,7 @@
 #include "../lib/CmdLine.h"
 #include "GA.h"
 #include <set>
+#include <map>
 #include <vector>
 #include <cstdlib>
 
@@ -33,7 +34,7 @@ namespace GA {
 
 	protected:
 		void _crossover(typename S::Pair& parents, typename S::Ptr p) {
-			std::vector<typename S::GeneType>* _parents[2] = {&parents.first->genotype, &parents.second->genotype};
+			typename S::ChromosomeType* _parents[2] = {&parents.first->genotype, &parents.second->genotype};
 
 			int nToggle = 0;
 			int nLen = parents.first->genotype.size();
@@ -118,8 +119,8 @@ namespace GA {
 
 	protected:
 		void _crossover(typename S::Pair& parents, typename S::Ptr p) {
-			std::vector<typename S::GeneType>& p1 = parents.first->genotype;
-			std::vector<typename S::GeneType>& p2 = parents.second->genotype;
+			typename S::ChromosomeType& p1 = parents.first->genotype;
+			typename S::ChromosomeType& p2 = parents.second->genotype;
 			std::set<typename S::GeneType> values;
 
 			int nLen = p1.size();
@@ -164,12 +165,70 @@ namespace GA {
 	};
 
 	template <typename S>
+	class EdgeRecombinationCrossover : public BaseCrossover<S> {
+	public:
+		EdgeRecombinationCrossover(CCmdLine& cmdLine) : BaseCrossover<S>() {}
+		virtual ~EdgeRecombinationCrossover() {}
+
+	protected:
+		void _crossover(typename S::Pair& parents, typename S::Ptr p) {
+			typename S::ChromosomeType* _parents[2] = {&parents.first->genotype, &parents.second->genotype};
+			std::map< typename S::GeneType, std::set<typename S::GeneType> > adjsTable;
+			std::set<typename S::GeneType> keys;
+
+			for (int i=0; i<2; ++i) {
+				typename S::ChromosomeType& px = *_parents[i];
+				
+				int nLen = px.size();
+				for (int k=0; k<nLen; ++k) {
+					typename S::GeneType val = px[k];
+					std::set<typename S::GeneType>& s = adjsTable[val];
+					keys.insert(val);
+			
+					s.insert( (k == 0) ? px[nLen-1] : px[k-1] );
+					s.insert( (k == nLen-1) ? px[0] : px[k+1] );
+				}
+			}
+
+			typename S::ChromosomeType& px = *_parents[rand() % 2];
+			int nLen = px.size();
+			typename S::GeneType val = px[0];
+			for (int i=0; i<nLen; ++i) {
+				p->genotype[i] = val;
+
+				if (i == nLen-1)
+					break;
+
+				std::set<typename S::GeneType>::iterator kit = keys.begin();
+				for (; kit != keys.end(); ++kit)
+					adjsTable[ *kit ].erase(val);
+				
+				std::set<typename S::GeneType>& s = adjsTable[val];
+				std::set<typename S::GeneType>::iterator it = s.begin();
+
+				typename S::GeneType min = *it;
+				unsigned int minSize = adjsTable[min].size();
+				
+				for (; it != s.end(); ++it) {
+					if (adjsTable[ *it ].size() <= minSize) {
+						min = *it;
+						minSize = adjsTable[min].size();
+					}
+				}
+
+				val = min;
+			}
+		}
+	};
+
+	template <typename S>
 	class CrossoverOp {
 	public:
 		enum {
 			Cycle = 0,
 			Order,
 			PMX,
+			EdgeRecombination,
 		};
 	public:
 		static BaseCrossover<S>* Create(CCmdLine& cmdLine) {
@@ -178,6 +237,7 @@ namespace GA {
 				case Cycle: return new CycleCrossover<S>(cmdLine);
 				case Order: return new OrderCrossover<S>(cmdLine);
 				case PMX:	return new PMXCrossover<S>(cmdLine);
+				case EdgeRecombination:	return new EdgeRecombinationCrossover<S>(cmdLine);
 			}
 			return NULL;
 		}
