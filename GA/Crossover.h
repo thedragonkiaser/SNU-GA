@@ -233,9 +233,9 @@ namespace GA {
 
 				int k=0;
 				while (next == -1) {
-					if (occupied[ px[k] ])
-						continue;
-					next = px[k];
+					if (!occupied[ px[k] ])
+						next = px[k];
+					++k;
 				}
 			}
 		}

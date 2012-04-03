@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
 	if (cmdLine.HasSwitch("-k"))
 		k = MyUtil::strTo<int>( cmdLine.GetArgument("-k", 0) );
 	bool bRepair = !cmdLine.HasSwitch("-noRepair");	
-	bool bPlot = !cmdLine.HasSwitch("-plot");	
+	bool bPlot = cmdLine.HasSwitch("-plot");	
 
 	// generate initial solutions
 	Solution::Vector population;

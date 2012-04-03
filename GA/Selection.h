@@ -45,6 +45,8 @@ namespace GA {
 
 			typename S::Ptr pFather = population[this->_pick()];
 			typename S::Ptr pMother = population[this->_pick()];
+			while (pFather == pMother) 
+				pMother = population[this->_pick()];
 
 			return make_pair(pFather, pMother);
 		}
@@ -78,6 +80,8 @@ namespace GA {
 		typename S::Pair select(typename S::Vector& population) {
 			typename S::Ptr pFather = population[this->_pick(population)];
 			typename S::Ptr pMother = population[this->_pick(population)];
+			while (pFather == pMother) 
+				pMother = population[this->_pick(population)];
 
 			return make_pair(pFather, pMother);
 		}
@@ -140,6 +144,8 @@ namespace GA {
 
 			typename S::Ptr pFather = population[this->_pick()];
 			typename S::Ptr pMother = population[this->_pick()];
+			while (pFather == pMother) 
+				pMother = population[this->_pick()];
 
 			return make_pair(pFather, pMother);
 		}
