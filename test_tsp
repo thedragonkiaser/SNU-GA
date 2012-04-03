@@ -1,0 +1,9 @@
+#!/bin/bash
+
+A=0
+while [ $A -ne $3 ]
+do
+	./bin/tsp -i $1 -o $2 -n 30 -k 1 -S 0 4 -X 2 -M 3 0.001 -R 2
+	let A++
+done
+
