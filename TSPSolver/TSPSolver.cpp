@@ -131,10 +131,10 @@ int main(int argc, char* argv[]) {
 	}
 	else {
 		map<int, int> mTimeLimit;
-		mTimeLimit[10] = 5500;
-		mTimeLimit[20] = 19500;
-		mTimeLimit[50] = 59500;
-		mTimeLimit[100] = 179500;
+		mTimeLimit[10] = 5700;
+		mTimeLimit[20] = 19700;
+		mTimeLimit[50] = 59700;
+		mTimeLimit[100] = 179700;
 		
 		map<int, int>::iterator it = mTimeLimit.find(nCities);
 		if (it != mTimeLimit.end())
