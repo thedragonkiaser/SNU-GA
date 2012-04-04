@@ -123,7 +123,6 @@ namespace GA {
 	class RankBasedSelector : public RouletteWheelSelector<S> {
 	public:
 		RankBasedSelector(CCmdLine& cmdLine) : RouletteWheelSelector<S>(cmdLine) {
-			this->_threshold = MyUtil::strTo<float>( cmdLine.GetArgument("-S", 1) );
 			this->_maxFitness = MyUtil::strTo<float>( cmdLine.GetArgument("-S", 2) );
 			this->_minFitness = MyUtil::strTo<float>( cmdLine.GetArgument("-S", 3) );
 		}
