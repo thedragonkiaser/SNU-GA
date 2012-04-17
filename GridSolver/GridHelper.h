@@ -1,11 +1,13 @@
 #pragma once
 
 #include "GA\GA.h"
+#include <vector>
 
 class GridHelper {
 public:
 	GridHelper() {
 		_points = NULL;
+		_used = NULL;
 	};
 	virtual ~GridHelper() {
 		this->cleanup();
@@ -38,7 +40,8 @@ private:
 	bool **_used;
 
 public:
-	int xx, yy, nn;
+	int rows, columns, nn;
+	std::vector<int> values;
 };
 
 

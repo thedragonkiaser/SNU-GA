@@ -30,8 +30,8 @@ namespace GA {
 
 		// Methods
 		int get(int x, int y) {
-			assert(x * width + y < this->genotype.size());
-			return this->genotype[x * width + y];
+			assert(y * width + x < (int)this->genotype.size());
+			return this->genotype[y * width + x];
 		}
 
 		int getDistance(const Solution& sol) {

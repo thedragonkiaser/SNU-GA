@@ -2,12 +2,16 @@
 
 #include <string.h>
 #include <cstdio>
+#include <algorithm>
+#include <functional>
+
+using namespace std;
 
 void GridHelper::readPoints()
 {
     // allowable numbers from 0 to n-1
-    scanf("%d", &xx); // ignored
-    scanf("%d", &yy); // ignored
+    scanf("%d", &rows); // ignored
+    scanf("%d", &columns); // ignored
     scanf("%d", &nn);
 
 	this->cleanup();
@@ -18,8 +22,12 @@ void GridHelper::readPoints()
 	memset(_points, 0, sizeof(_points));
 
     _used = new bool *[nn];
-    for (int i=0; i<=nn; i++)
+    for (int i=0; i<nn; i++)
 		_used[i] = new bool [nn];
+
+	values.clear();
+	values.reserve(nn);
+	values.insert(values.begin(), nn, 0);
 
     // read in point values
     while (true) {
@@ -29,7 +37,11 @@ void GridHelper::readPoints()
         if (i<0) break;
         scanf("%d", &j);
         scanf("%d", &_points[i][j]);
+
+		values[i] = i;
+		values[j] = j;
     }
+	values.erase( remove_if(values.begin(), values.end(), bind1st(equal_to<int>(), 0)), values.end() );
 }
 
 int GridHelper::scoreGrid(GA::Solution::Ptr pSol)
@@ -55,16 +67,20 @@ int GridHelper::scoreGrid(GA::Solution::Ptr pSol)
     return score;
 }
 
-int GridHelper::getPoints(GA::Solution::Ptr pSol, int x1, int y1, int x2, int y2)
+int GridHelper::getPoints(GA::Solution::Ptr pSol, int cx, int cy, int rx, int ry)
 {
-    // not previously counted pair
-	int xy1 = pSol->get(x1, y1);
-	int xy2 = pSol->get(x2, y2);
+	if ((rx<0) || (rx>=pSol->width) || (ry<0) || (ry>=pSol->height)) {
+        return 0;
+    } 
 
-    if (!_used[xy1][xy2]) {
-		if (_points[xy1][xy2]) {
-			_used[xy1][xy2] = true;
-			return _points[xy1][xy2];
+    // not previously counted pair
+	int c = pSol->get(cx, cy);
+	int r = pSol->get(rx, ry);
+
+    if (!_used[c][r]) {
+		if (_points[c][r]) {
+			_used[c][r] = true;
+			return _points[c][r];
         }
 	}
 	return 0;
