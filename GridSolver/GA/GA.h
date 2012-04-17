@@ -7,7 +7,7 @@
 
 #include <assert.h>
 
-//using namespace rel_ops;
+using namespace std::rel_ops;
 
 namespace GA {
 	struct Solution {
@@ -64,5 +64,11 @@ namespace GA {
 		bool operator <(Ptr p) const {
 			return *this < *p;
         }
+	};
+
+	struct SolutionPtrComp : std::unary_function<Solution::Ptr, bool> {
+		bool operator()(const Solution::Ptr& lhs, const Solution::Ptr& rhs) const {
+			return *lhs > *rhs;
+		}
 	};
 }

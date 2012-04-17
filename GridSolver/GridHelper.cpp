@@ -10,24 +10,24 @@ using namespace std;
 void GridHelper::readPoints()
 {
     // allowable numbers from 0 to n-1
-    scanf("%d", &rows); // ignored
-    scanf("%d", &columns); // ignored
-    scanf("%d", &nn);
+    scanf("%d", &this->rows); // ignored
+    scanf("%d", &this->columns); // ignored
+    scanf("%d", &this->nn);
 
-	this->cleanup();
 	// create and zero matrix
-    _points = new int *[nn];
-    for (int i=0; i<nn; i++)
-		_points[i] = new int [nn];
-	memset(_points, 0, sizeof(_points));
+	int size = this->nn * this->nn;
 
-    _used = new bool *[nn];
-    for (int i=0; i<nn; i++)
-		_used[i] = new bool [nn];
+	this->_points.clear();
+	this->_points.reserve(size);
+    this->_points.insert(this->_points.begin(), size, 0);
 
-	values.clear();
-	values.reserve(nn);
-	values.insert(values.begin(), nn, 0);
+	this->_used.clear();
+	this->_used.reserve(size);
+	this->_used.insert(this->_used.begin(), size, 0);
+
+	this->values.clear();
+	this->values.reserve(this->nn);
+	this->values.insert(this->values.begin(), this->nn, 0);
 
     // read in point values
     while (true) {
@@ -36,31 +36,30 @@ void GridHelper::readPoints()
         scanf("%d", &i);
         if (i<0) break;
         scanf("%d", &j);
-        scanf("%d", &_points[i][j]);
+        scanf("%d", &this->_points[j * this->nn + i]);
 
-		values[i] = i;
-		values[j] = j;
+		this->values[i] = i;
+		this->values[j] = j;
     }
-	values.erase( remove_if(values.begin(), values.end(), bind1st(equal_to<int>(), 0)), values.end() );
+	this->values.erase( remove_if(this->values.begin(), this->values.end(), bind1st(equal_to<int>(), 0)), this->values.end() );
 }
 
 int GridHelper::scoreGrid(GA::Solution::Ptr pSol)
 {
-    int score;
-	memset(_used, false, sizeof(_used));
+	fill(this->_used.begin(), this->_used.end(), 0);
 
-    score = 0;
+    int score = 0;
     for (int x=0; x<pSol->width; x++) {
         for (int y=0; y<pSol->height; y++) {
             // score the pairs in the neighborhood of (x, y)
-            score += getPoints(pSol, x, y, x+1, y-1);
-            score += getPoints(pSol, x, y, x+1, y);
-            score += getPoints(pSol, x, y, x+1, y+1);
-            score += getPoints(pSol, x, y, x, y-1);
-            score += getPoints(pSol, x, y, x, y+1);
-            score += getPoints(pSol, x, y, x-1, y-1);
-            score += getPoints(pSol, x, y, x-1, y);
-            score += getPoints(pSol, x, y, x-1, y+1);
+            score += this->getPoints(pSol, x, y, x+1, y-1);
+            score += this->getPoints(pSol, x, y, x+1, y);
+            score += this->getPoints(pSol, x, y, x+1, y+1);
+            score += this->getPoints(pSol, x, y, x, y-1);
+            score += this->getPoints(pSol, x, y, x, y+1);
+            score += this->getPoints(pSol, x, y, x-1, y-1);
+            score += this->getPoints(pSol, x, y, x-1, y);
+            score += this->getPoints(pSol, x, y, x-1, y+1);
         }
     }
 	
@@ -69,18 +68,17 @@ int GridHelper::scoreGrid(GA::Solution::Ptr pSol)
 
 int GridHelper::getPoints(GA::Solution::Ptr pSol, int cx, int cy, int rx, int ry)
 {
-	if ((rx<0) || (rx>=pSol->width) || (ry<0) || (ry>=pSol->height)) {
+	if ((rx<0) || (rx>=pSol->width) || (ry<0) || (ry>=pSol->height))
         return 0;
-    } 
 
     // not previously counted pair
 	int c = pSol->get(cx, cy);
 	int r = pSol->get(rx, ry);
 
-    if (!_used[c][r]) {
-		if (_points[c][r]) {
-			_used[c][r] = true;
-			return _points[c][r];
+    if (!this->_used[r * this->nn + c]) {
+		if (this->_points[r * this->nn + c]) {
+			this->_used[r * this->nn + c] = true;
+			return this->_points[r * this->nn + c];
         }
 	}
 	return 0;

@@ -1,13 +1,15 @@
 #include "lib/CmdLine.h"
 #include "lib/Utililty.h"
 #include "GridHelper.h"
+#include "GA/GA.h"
+#include "GA/Selection.h"
 
 #include <iostream>
 #include <fstream>
 #include <ctime>
+#include <cstdlib>
 
 using namespace std;
-using namespace GA;
 
 int main(int argc, char* argv[]) {
 	time_t tCurrent = Utility::getMilliSec();
@@ -32,10 +34,10 @@ int main(int argc, char* argv[]) {
 	grid.readPoints();
 	
 	//////// prepare the initial population
-	Solution::Vector population;
+	GA::Solution::Vector population;
 	population.reserve(n);
 	for (int i=0; i<n; ++i) {
-		Solution::Ptr p = make_shared<Solution>(grid.columns, grid.rows);
+		GA::Solution::Ptr p = make_shared<GA::Solution>(grid.columns, grid.rows);
 
 		int size = p->width * p->height;
 		for (int k=0; k<size; ++k) {
@@ -45,31 +47,48 @@ int main(int argc, char* argv[]) {
 		p->cost = grid.scoreGrid(p);
 		population.push_back(p);
 	}
+	sort(population.begin(), population.end(), GA::SolutionPtrComp());
+	
+	GA::SelectionOp* pSelector	= GA::SelectionOp::Create(cmdLine);
+//	CrossoverOp* pCrossover	= CrossoverOp::Create(cmdLine);
+//	MutationOp* pMutator	= MutationOp::Create(cmdLine);
+//	ReplacementOp* pReplacer= ReplacementOp::Create(cmdLine);
 
 	int nGenerations = 0;
-/*
 	while (true) {
-		Solution::Vector offsprings;
+		GA::Solution::Vector offsprings;
 		offsprings.reserve(k);
 
-		for (int i=0; i<k; ++i) {
+		vector<GA::Solution::Pair> parentsVec;
+		parentsVec.reserve(k);
 
+		for (int i=0; i<k; ++i) {
+			GA::Solution::Pair parents = pSelector->select(population);
+			parentsVec.push_back(parents);
+
+//			GA::Solution::Ptr pOffspring = pCrossover->crossover(parents);
+
+//			pMutator->mutate(pOffspring, grid.values, tCurrent, tEnd);
+
+//			pOffspring->cost = grid.scoreGrid(pOffspring);
+//			offsprings.push_back(pOffspring);
 		}
+//		pReplacer->replace(offsprings, parentsVec, population);
 
 		++nGenerations;
 #if defined (_PROFILE)
 
 #endif
-		if (Utility::getMilliSec() > tEnd)
+		tCurrent = Utility::getMilliSec();
+		if (tCurrent > tEnd)
 			break;
 	}
-*/
 
 	//////// output
 	ofstream fout;
 	fout.open(sOutput, fstream::out | fstream::trunc);
 	if (fout.is_open()) {
-		Solution::Ptr pSol = population.front();
+		GA::Solution::Ptr pSol = population.front();
 		int size = (int)pSol->genotype.size();
 		for (int i=0; i<size; ++i) {
 			if ( (i+1) % pSol->width == 0)
