@@ -1,45 +1,68 @@
-#if !defined(_GA_H_)
-#define _GA_H_
+#pragma once
 
 #include <memory>
 #include <utility>
 #include <vector>
 #include <algorithm>
-#include <functional>
+
+#include <assert.h>
+
+//using namespace rel_ops;
 
 namespace GA {
-	template <typename T, typename C>
 	struct Solution {
-		typedef T GeneType;
-		typedef C CostType;
-		typedef std::vector<T> ChromosomeType;
-		typedef std::shared_ptr< Solution<T, C> > Ptr;
+		// Type Definitions
+		typedef std::vector<int> ChromosomeType;
+		typedef std::shared_ptr<Solution> Ptr;
 		typedef std::pair<Ptr, Ptr> Pair;
 		typedef std::vector<Ptr> Vector;
 
-		ChromosomeType genotype;
-		C cost;
+		// Constructors
+		Solution() : width(0), height(0), cost(0) {};
+		Solution(int w, int h) : width(w), height(h), cost(0) {
+			genotype.reserve( width * height );
+		};
 
-		bool operator <(const Solution<T, C>& r) const {
-			return this->cost > r.cost;
-        }
-		bool operator >(const Solution<T, C>& r) const {
-			return r < *this;
-        }
-		bool operator ==(const Solution<T, C>& other) const {
+		// Fields
+		ChromosomeType genotype;
+		int width, height;
+		int cost;
+
+		// Methods
+		int get(int x, int y) {
+			assert(x * width + y < this->genotype.size());
+			return this->genotype[x * width + y];
+		}
+
+		int getDistance(const Solution& sol) {
+			// Hamming Distance
+			int dist=0;
+
+			int size = this->genotype.size();
+			for (int i=0; i<size; ++i) {
+				if (this->genotype[i] != sol.genotype[i])
+					++dist;
+			}
+
+			return dist;
+		}
+
+		int getDistance(Ptr pSol) {
+			return this->getDistance(*pSol);
+		}
+
+		// Operators
+		bool operator ==(const Solution& other) const {
 			return equal(this->genotype.begin(), this->genotype.end(), other.genotype.begin());
         }
-		bool operator !=(const Solution<T, C>& other) const {
-			return !(*this == other);
+		bool operator ==(Ptr p) const {
+			return *this == *p;
+        }
+		bool operator <(const Solution& r) const {
+			return this->cost < r.cost;
+        }
+		bool operator <(Ptr p) const {
+			return *this < *p;
         }
 	};
-
-	template <typename S>
-	struct SolutionPtrComp : std::unary_function<typename S::Ptr, bool> {
-		bool operator()(const typename S::Ptr& lhs, const typename S::Ptr& rhs) const {
-			return *rhs < *lhs;
-		}
-	};
 }
-
-#endif

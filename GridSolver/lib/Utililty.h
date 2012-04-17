@@ -1,16 +1,15 @@
-#if !defined(_UTIL_H_)
-#define _UTIL_H_
+#pragma once
 
 #include <sstream>
 #include <string>
 
-namespace MyUtil {
+namespace Utility {
 #if defined(linux)
 	#include <sys/time.h>
 
     typedef unsigned long time_t;
 
-	time_t getTime() {
+	time_t getMilliSec() {
 		timeval tv;
 		gettimeofday(&tv, 0);
 		return tv.tv_sec * 1000ul + tv.tv_usec/1000ul;
@@ -19,7 +18,9 @@ namespace MyUtil {
 	#pragma comment(lib, "winmm.lib")
 	#include <windows.h>
 
-	time_t getTime() { return timeGetTime(); }
+	time_t getMilliSec() {
+		return timeGetTime();
+	}
 #endif
 
 	template<typename T>
@@ -37,4 +38,3 @@ namespace MyUtil {
 		return ss.str();
 	}
 }
-#endif
