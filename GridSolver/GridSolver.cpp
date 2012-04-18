@@ -1,9 +1,10 @@
 #include "lib/CmdLine.h"
 #include "lib/Utililty.h"
+
 #include "GridHelper.h"
 #include "GA/GA.h"
-#include "GA/Selection.h"
 
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <ctime>
@@ -49,10 +50,7 @@ int main(int argc, char* argv[]) {
 	}
 	sort(population.begin(), population.end(), GA::SolutionPtrComp());
 	
-	GA::SelectionOp* pSelector	= GA::SelectionOp::Create(cmdLine);
-//	CrossoverOp* pCrossover	= CrossoverOp::Create(cmdLine);
-//	MutationOp* pMutator	= MutationOp::Create(cmdLine);
-//	ReplacementOp* pReplacer= ReplacementOp::Create(cmdLine);
+	GA::GAHelper ga(cmdLine);
 
 	int nGenerations = 0;
 	while (true) {
@@ -63,7 +61,7 @@ int main(int argc, char* argv[]) {
 		parentsVec.reserve(k);
 
 		for (int i=0; i<k; ++i) {
-			GA::Solution::Pair parents = pSelector->select(population);
+			GA::Solution::Pair parents = ga.select(population);
 			parentsVec.push_back(parents);
 
 //			GA::Solution::Ptr pOffspring = pCrossover->crossover(parents);

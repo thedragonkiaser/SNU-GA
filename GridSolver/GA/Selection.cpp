@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Selection.h"
+
 #include "../lib/Utililty.h"
 
 #include <set>
@@ -13,15 +14,15 @@ using namespace std;
 
 namespace GA {
 	//////////////////////////// SelectionOp ////////////////////////////
-	SelectionOp* SelectionOp::Create(CCmdLine& cmdLine) {
+	SelectionOp* SelectionOp::create(CCmdLine& cmdLine) {
 		int mode = Utility::strTo<int>( cmdLine.GetArgument("-S", 0) );
 
 		switch (mode) {
 		case RouletteWheel: return new RouletteWheelSelector(cmdLine);
 		case Tournament:	return new TournamentSelector(cmdLine);
 		case RankBased:		return new RankBasedSelector(cmdLine);
-		case Sharing: return NULL;
 		}
+
 		return NULL;
 	}
 
@@ -34,33 +35,47 @@ namespace GA {
 		return make_pair(p1, p2);
 	}
 
-	//////////////////////////// RouletteWheelSelector ////////////////////////////
-	RouletteWheelSelector::RouletteWheelSelector(CCmdLine& cmdLine)
-		: SelectionOp() {
-		this->_threshold = Utility::strTo<float>( cmdLine.GetArgument("-S", 1) );
-	}
-
-	Solution::Pair RouletteWheelSelector::select(Solution::Vector& population) {
-		int best = population.front()->cost;
-		int worst = population.back()->cost;
-		float C = abs((worst - best) / (this->_threshold - 1));
-
-		this->_sumFitness = 0;
-		this->_fitness.clear();
-		this->_fitness.reserve(population.size());
-
-		Solution::Vector::iterator it = population.begin();
-		for (;it != population.end(); ++it) {
-			float f = abs( (worst - (*it)->cost) + C );
-			this->_sumFitness += f;
-			this->_fitness.push_back(f);
-		}
-
+	//////////////////////////// FinessBasedSelector ////////////////////////////
+	Solution::Pair FitnessBasedSelector::select(Solution::Vector& population) {
+		this->_generateFitness(population);
+		this->_sharingFitness(population);
 		return SelectionOp::select(population);
 	}
 
-	int RouletteWheelSelector::_select(Solution::Vector& population) {
-		float r = ((float)rand() / (float)RAND_MAX) * this->_sumFitness;
+	void FitnessBasedSelector::_sharingFitness(Solution::Vector& population) {
+		if (!this->_isSharing)
+			return;
+
+		int size = (int)population.size();
+
+		int nLongestDist = 0;
+		vector<int> distances(size * size, 0);
+		for (int i=0; i<size; ++i) {
+			for (int k=0; k<size; ++k) {
+				int dist = population[i]->getDistance(population[k]);
+				if (dist > nLongestDist)
+					nLongestDist = dist;
+				distances[i*size + k] = dist;
+			}
+		}
+		
+		this->_fitnessSum = 0;
+		for (int i=0; i<size; ++i) {
+			Solution::Ptr pSol = population[i];
+
+			float sum = 0;
+			for (int k=0; k<size; ++k) {
+				int nDist = distances[i*size + k];
+				float ratio = (float)nDist / (float)nLongestDist;
+				sum += (1 - (float)pow(ratio, this->_sharingFactor));
+			}
+			this->_fitness[i] /= sum;
+			this->_fitnessSum += this->_fitness[i];
+		}
+	}
+
+	int FitnessBasedSelector::_select(Solution::Vector& population) {
+		float r = ((float)rand() / (float)RAND_MAX) * this->_fitnessSum;
 		float s = 0;
 
 		int nLen = this->_fitness.size();
@@ -69,6 +84,56 @@ namespace GA {
 			if (r<=s) return i;
 		}
 		return 0;
+	}
+
+	//////////////////////////// RouletteWheelSelector ////////////////////////////
+	RouletteWheelSelector::RouletteWheelSelector(CCmdLine& cmdLine)
+		: FitnessBasedSelector() {
+		this->_threshold = Utility::strTo<float>( cmdLine.GetArgument("-S", 1) );
+		this->_isSharing = ("1" == cmdLine.GetArgument("-S", 2));
+		if (this->_isSharing)
+			this->_sharingFactor = Utility::strTo<int>( cmdLine.GetArgument("-S", 3) );
+	}
+
+	void RouletteWheelSelector::_generateFitness(Solution::Vector& population) {
+		int best = population.front()->cost;
+		int worst = population.back()->cost;
+		float C = abs((worst - best) / (this->_threshold - 1));
+
+		this->_fitnessSum = 0;
+		this->_fitness.clear();
+		this->_fitness.reserve(population.size());
+
+		Solution::Vector::iterator it = population.begin();
+		for (;it != population.end(); ++it) {
+			float f = abs( (worst - (*it)->cost) + C );
+			this->_fitnessSum += f;
+			this->_fitness.push_back(f);
+		}
+	}
+	
+	//////////////////////////// RankBasedSelector ////////////////////////////
+	RankBasedSelector::RankBasedSelector(CCmdLine& cmdLine)
+		: FitnessBasedSelector() {
+		this->_maxFitness = Utility::strTo<float>( cmdLine.GetArgument("-S", 1) );
+		this->_minFitness = Utility::strTo<float>( cmdLine.GetArgument("-S", 2) );
+		this->_isSharing = ("1" == cmdLine.GetArgument("-S", 3));
+		if (this->_isSharing)
+			this->_sharingFactor = Utility::strTo<int>( cmdLine.GetArgument("-S", 4) );
+	}
+
+	void RankBasedSelector::_generateFitness(Solution::Vector& population) {
+		int size = (int)population.size();
+		this->_fitnessSum = 0;
+		this->_fitness.clear();
+		this->_fitness.reserve(population.size());
+
+		float C = (this->_minFitness - this->_maxFitness) / (size - 1);
+		for (int i=0; i<size; ++i) {
+			float f = abs(this->_maxFitness + i * C);
+			this->_fitnessSum += f;
+			this->_fitness.push_back(f);
+		}
 	}
 
 	//////////////////////////// TournamentSelector ////////////////////////////
@@ -105,27 +170,5 @@ namespace GA {
 			indice = temp;
 		}
 		return *indice.begin();
-	}
-
-	RankBasedSelector::RankBasedSelector(CCmdLine& cmdLine)
-		: RouletteWheelSelector(cmdLine) {
-		this->_maxFitness = Utility::strTo<float>( cmdLine.GetArgument("-S", 1) );
-		this->_minFitness = Utility::strTo<float>( cmdLine.GetArgument("-S", 2) );
-	}
-
-	Solution::Pair RankBasedSelector::select(Solution::Vector& population) {
-		this->_sumFitness = 0;
-		int size = (int)population.size();
-
-		this->_fitness.clear();
-		this->_fitness.reserve(size);
-		float C = (this->_minFitness - this->_maxFitness) / (size - 1);
-		for (int i=0; i<size; ++i) {
-			float f = this->_maxFitness + i * C;;
-			this->_sumFitness += f;
-			this->_fitness.push_back(f);
-		}
-
-		return SelectionOp::select(population);
 	}
 }

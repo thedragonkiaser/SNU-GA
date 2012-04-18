@@ -9,35 +9,63 @@ namespace GA {
 		enum {
 			RouletteWheel = 0,
 			Tournament,
-			RankBased,
-			Sharing
+			RankBased
 		};
 	public:
 		SelectionOp() {};
 		virtual ~SelectionOp() {};
 
-		static SelectionOp* Create(CCmdLine& cmdLine);
+		static SelectionOp* create(CCmdLine& cmdLine);
 		virtual Solution::Pair select(Solution::Vector& population);
 
 	protected:
 		virtual int _select(Solution::Vector& population) = 0;
 	};
 
-	class RouletteWheelSelector : public SelectionOp {
+	class FitnessBasedSelector : public SelectionOp {
 	public:
-		RouletteWheelSelector(CCmdLine& cmdLine);
-		virtual ~RouletteWheelSelector() {}
+		FitnessBasedSelector() : SelectionOp(), _fitnessSum(0), _isSharing(false), _sharingFactor(1) {};
+		virtual ~FitnessBasedSelector() {};
 
 		virtual Solution::Pair select(Solution::Vector& population);
 
 	protected:
+		virtual void _generateFitness(Solution::Vector& population) = 0;
+		virtual void _sharingFitness(Solution::Vector& population);
+
 		virtual int _select(Solution::Vector& population);
 
 	protected:
-		float _threshold;
-		
 		std::vector<float> _fitness;
-		float _sumFitness;
+		float _fitnessSum;
+		
+		bool _isSharing;
+		int _sharingFactor;
+	};
+
+	class RouletteWheelSelector : public FitnessBasedSelector {
+	public:
+		RouletteWheelSelector(CCmdLine& cmdLine);
+		virtual ~RouletteWheelSelector() {}
+		
+	protected:
+		virtual void _generateFitness(Solution::Vector& population);
+
+	protected:
+		float _threshold;
+	};
+
+	class RankBasedSelector : public FitnessBasedSelector {
+	public:
+		RankBasedSelector(CCmdLine& cmdLine);
+		virtual ~RankBasedSelector() {}
+
+	protected:
+		virtual void _generateFitness(Solution::Vector& population);
+
+	protected:
+		float _maxFitness;
+		float _minFitness;
 	};
 
 	class TournamentSelector : public SelectionOp {
@@ -51,17 +79,5 @@ namespace GA {
 	protected:
 		float _threshold;
 		int _exp;
-	};
-
-	class RankBasedSelector : public RouletteWheelSelector {
-	public:
-		RankBasedSelector(CCmdLine& cmdLine);
-		virtual ~RankBasedSelector() {}
-
-		virtual Solution::Pair select(Solution::Vector& population);
-
-	protected:
-		float _maxFitness;
-		float _minFitness;
 	};
 }
