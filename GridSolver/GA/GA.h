@@ -45,13 +45,16 @@ namespace GA {
 	};
 
 	class SelectionOp;
+	class ReplacementOp;
 
 	class GAHelper {
 	public:
 		GAHelper(CCmdLine& cmdLine);
 		Solution::Pair select(Solution::Vector& population);
+		void replace(Solution::Vector& offsprings, std::vector<Solution::Pair>& parents, Solution::Vector& population);
 
 	protected:
 		SelectionOp* _selector;
+		ReplacementOp* _replacer;
 	};
 }
