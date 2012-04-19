@@ -7,9 +7,11 @@
 #include <algorithm>
 #include <iterator>
 #include <functional>
+#include <numeric>
 #include <iostream>
 #include <fstream>
 #include <ctime>
+#include <cmath>
 #include <cstdlib>
 
 using namespace std;
@@ -30,7 +32,7 @@ GA::Solution::Ptr genSolution() {
 
 int main(int argc, char* argv[]) {
 	time_t tStart = Utility::getMilliSec();
-	time_t tDuration = 6000000 - 1000;
+	time_t tDuration = 60000/*0*/ - 5000;
 	time_t tEnd = tStart + tDuration;
 
 	srand((unsigned int)time(NULL));
@@ -61,6 +63,10 @@ int main(int argc, char* argv[]) {
 	GA::GAHelper ga(cmdLine);
 	int nGenerations = 0;
 	time_t tCurrent = tStart;
+
+#if defined (_PROFILE_)
+	cout << "Generation\tBest\tCostAvg\tCostSTD\tDiffAvg\tDiffSTD" << endl;
+#endif
 	while (true) {
 		GA::Solution::Vector offsprings;
 		offsprings.reserve(k);
@@ -82,8 +88,33 @@ int main(int argc, char* argv[]) {
 		ga.replace(offsprings, parentsVec, population);
 
 		++nGenerations;
-#if defined (_PROFILE)
+#if defined (_PROFILE_)
+		int nCostSum = 0;
+		int nDiffSum = 0;
+		GA::Solution::Ptr pBest = population.front();
+		GA::Solution::Vector::iterator it = population.begin();
+		for (; it != population.end(); ++it) {
+			nCostSum += (*it)->cost;
+			nDiffSum += pBest->getDistance(*it);
+		}
 
+		float fCostAvg = (float)nCostSum / population.size();
+		float fDiffAvg = (float)nDiffSum / population.size();
+
+		float fCostSum = 0;
+		float fDiffSum = 0;
+		it = population.begin();
+		for (; it != population.end(); ++it) {
+			fCostSum += pow(((*it)->cost - fCostAvg), 2);
+			fDiffSum += pow((pBest->getDistance(*it) - fDiffAvg), 2);
+		}
+
+		float fCostSTD = sqrt(fCostSum / population.size());
+		float fDiffSTD = sqrt(fDiffSum / population.size());
+
+		cout << nGenerations << "\t" << pBest->cost << "\t" <<
+			fCostAvg << "\t" << fCostSTD << "\t" <<
+			fDiffAvg << "\t" << fDiffSTD << endl;
 #endif
 		tCurrent = Utility::getMilliSec();
 		if (tCurrent > tEnd)
@@ -106,7 +137,9 @@ int main(int argc, char* argv[]) {
 #if defined (_TEST_)
 		fout << endl;
 		fout << "Score : " << pSol->cost << endl;
-
+		for (int i=0; i<argc; ++i)
+			fout << argv[i] << " ";
+		fout << endl;
 		fout << "================================================================================" << endl;
 		fout << endl;
 #endif
