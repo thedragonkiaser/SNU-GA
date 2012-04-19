@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Selection.h"
 
 #include "../lib/Utililty.h"

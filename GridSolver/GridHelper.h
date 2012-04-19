@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GA\GA.h"
+#include "GA/GA.h"
 #include <vector>
 
 class GridHelper {
