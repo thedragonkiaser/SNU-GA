@@ -3,6 +3,7 @@
 
 #include "GA.h"
 #include "Selection.h"
+#include "Mutation.h"
 #include "Replacement.h"
 
 namespace GA {
@@ -59,7 +60,7 @@ namespace GA {
 	GAHelper::GAHelper(CCmdLine& cmdLine) {
 		this->_selector = SelectionOp::create(cmdLine);
 		//	CrossoverOp* pCrossover	= CrossoverOp::Create(cmdLine);
-//	MutationOp* pMutator	= MutationOp::Create(cmdLine);
+		//this->_mutator = MutationOp::create(cmdLine);
 		this->_replacer = ReplacementOp::create(cmdLine);
 	}
 
@@ -67,7 +68,12 @@ namespace GA {
 		return this->_selector->select(population);
 	}
 
+	bool GAHelper::mutate(Solution::Ptr pSolution, vector<int>& geneSet, int t, int T) {
+		//return this->_mutator->mutate(pSolution, geneSet, t, T
+		return false;
+	}
+
 	void GAHelper::replace(Solution::Vector& offsprings, vector<Solution::Pair>& parents, Solution::Vector& population) {
-		return this->_replacer->replace(offsprings, parents, population);
+		this->_replacer->replace(offsprings, parents, population);
 	}
 }

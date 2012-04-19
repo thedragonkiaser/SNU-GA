@@ -38,7 +38,13 @@ namespace GA {
 		bool operator <(Ptr p) const;
 	};
 
-	struct SolutionPtrComp : std::unary_function<Solution::Ptr, bool> {
+	struct SolutionPtrLess : std::binary_function<Solution::Ptr, Solution::Ptr, bool> {
+		bool operator()(const Solution::Ptr& lhs, const Solution::Ptr& rhs) const {
+			return *lhs < *rhs;
+		}
+	};
+
+	struct SolutionPtrGreater : std::binary_function<Solution::Ptr, Solution::Ptr, bool> {
 		bool operator()(const Solution::Ptr& lhs, const Solution::Ptr& rhs) const {
 			return *lhs > *rhs;
 		}
@@ -46,15 +52,19 @@ namespace GA {
 
 	class SelectionOp;
 	class ReplacementOp;
+	class MutationOp;
 
 	class GAHelper {
 	public:
 		GAHelper(CCmdLine& cmdLine);
+
 		Solution::Pair select(Solution::Vector& population);
+		bool mutate(Solution::Ptr pSolution, std::vector<int>& geneSet, int t, int T);
 		void replace(Solution::Vector& offsprings, std::vector<Solution::Pair>& parents, Solution::Vector& population);
 
 	protected:
-		SelectionOp* _selector;
-		ReplacementOp* _replacer;
+		SelectionOp*	_selector;
+		MutationOp*		_mutator;
+		ReplacementOp*	_replacer;
 	};
 }

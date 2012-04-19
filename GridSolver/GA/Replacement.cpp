@@ -21,11 +21,7 @@ namespace GA {
 			Solution::Ptr pOffspring(offsprings[i]);
 			this->_remove(pOffspring, parents[i], population);
 
-			Solution::Vector::iterator it = population.begin();
-			for (; it != population.end(); ++it) {
-				if (*pOffspring > **it)
-					break;
-			}
+			Solution::Vector::iterator it = find_if(population.begin(), population.end(), bind1st(SolutionPtrGreater(), pOffspring));
 			population.insert(it, pOffspring);
 		}
 	}
@@ -37,16 +33,14 @@ namespace GA {
 
 	//////////////////////////// ReplaceParent ////////////////////////////
 	void ReplaceParent::_remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) {
-		Solution::Vector::iterator it = remove_if(population.begin(), population.end(),
-			bind1st(equal_to<Solution::Ptr>(), parents.first));
+		Solution::Vector::iterator it = remove_if(population.begin(), population.end(),	bind1st(equal_to<Solution::Ptr>(), parents.first));
 		population.erase(it);
 	}
 
 	//////////////////////////// ReplaceWorstParent ////////////////////////////
 	void ReplaceWorstParent::_remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) {
 		Solution::Ptr parent( *(parents.first) < *(parents.second) ? parents.first : parents.second );
-		Solution::Vector::iterator it = remove_if(population.begin(), population.end(),
-			bind1st(equal_to<Solution::Ptr>(), parent));
+		Solution::Vector::iterator it = remove_if(population.begin(), population.end(),	bind1st(equal_to<Solution::Ptr>(), parent));
 		population.erase(it);
 	}
 }

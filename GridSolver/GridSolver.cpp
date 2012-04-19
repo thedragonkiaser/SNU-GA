@@ -5,6 +5,8 @@
 #include "GA/GA.h"
 
 #include <algorithm>
+#include <iterator>
+#include <functional>
 #include <iostream>
 #include <fstream>
 #include <ctime>
@@ -12,11 +14,26 @@
 
 using namespace std;
 
-int main(int argc, char* argv[]) {
-	time_t tCurrent = Utility::getMilliSec();
-	time_t tEnd = tCurrent + 6000000 - 1000;
+GridHelper* pGridHelper;
 
-	srand(time(NULL));
+int genGenes() {
+	int idx = rand() % pGridHelper->values.size();
+	return pGridHelper->values[idx];
+}
+
+GA::Solution::Ptr genSolution() {
+	GA::Solution::Ptr p = make_shared<GA::Solution>(pGridHelper->columns, pGridHelper->rows);
+	generate_n(back_inserter(p->genotype), p->width * p->height, genGenes);
+	p->cost = pGridHelper->scoreGrid(p);
+	return p;
+}
+
+int main(int argc, char* argv[]) {
+	time_t tStart = Utility::getMilliSec();
+	time_t tDuration = 6000000 - 1000;
+	time_t tEnd = tStart + tDuration;
+
+	srand((unsigned int)time(NULL));
 
 	//////// parse command line arguments
 	CCmdLine cmdLine;
@@ -24,35 +41,26 @@ int main(int argc, char* argv[]) {
 
 	string sInput( cmdLine.GetArgument("-i", 0) );
 	string sOutput( cmdLine.GetArgument("-o", 0) );
-	int n = cmdLine.HasSwitch("-n") ? Utility::strTo<int>( cmdLine.GetArgument("-n", 0) ) : 10;
+	int n = cmdLine.HasSwitch("-n") ? Utility::strTo<int>( cmdLine.GetArgument("-n", 0) ) : 5;
 	int k = cmdLine.HasSwitch("-k") ? Utility::strTo<int>( cmdLine.GetArgument("-k", 0) ) : 1;
 	bool bRepair = !cmdLine.HasSwitch("-noRepair");	
 	bool bPlot = cmdLine.HasSwitch("-plot");	
 
 	//////// parse input file
-	GridHelper grid;
+	pGridHelper = new GridHelper;
 	freopen(sInput.c_str(), "r", stdin);
-	grid.readPoints();
+	pGridHelper->readPoints();
 	
 	//////// prepare the initial population
 	GA::Solution::Vector population;
 	population.reserve(n);
-	for (int i=0; i<n; ++i) {
-		GA::Solution::Ptr p = make_shared<GA::Solution>(grid.columns, grid.rows);
-
-		int size = p->width * p->height;
-		for (int k=0; k<size; ++k) {
-			int idx = rand() % grid.values.size();
-			p->genotype.push_back(grid.values[idx]);
-		}
-		p->cost = grid.scoreGrid(p);
-		population.push_back(p);
-	}
-	sort(population.begin(), population.end(), GA::SolutionPtrComp());
+	generate_n(back_inserter(population), n, genSolution);
+	sort(population.begin(), population.end(), GA::SolutionPtrGreater());
 	
+	//////// main Loop
 	GA::GAHelper ga(cmdLine);
-
 	int nGenerations = 0;
+	time_t tCurrent = tStart;
 	while (true) {
 		GA::Solution::Vector offsprings;
 		offsprings.reserve(k);
@@ -65,13 +73,14 @@ int main(int argc, char* argv[]) {
 			parentsVec.push_back(parents);
 
 //			GA::Solution::Ptr pOffspring = pCrossover->crossover(parents);
+			GA::Solution::Ptr pOffspring = parents.first;
 
-//			pMutator->mutate(pOffspring, grid.values, tCurrent, tEnd);
+			ga.mutate(pOffspring, pGridHelper->values, (int)(tEnd - tCurrent), (int)tDuration);
 
-//			pOffspring->cost = grid.scoreGrid(pOffspring);
-//			offsprings.push_back(pOffspring);
+			pOffspring->cost = pGridHelper->scoreGrid(pOffspring);
+			offsprings.push_back(pOffspring);
 		}
-//		pReplacer->replace(offsprings, parentsVec, population);
+		ga.replace(offsprings, parentsVec, population);
 
 		++nGenerations;
 #if defined (_PROFILE)

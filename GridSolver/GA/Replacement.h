@@ -2,6 +2,7 @@
 
 #include "../lib/CmdLine.h"
 #include "GA.h"
+#include <vector>
 
 namespace GA {
 	class ReplacementOp {
