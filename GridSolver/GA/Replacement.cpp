@@ -34,6 +34,13 @@ namespace GA {
 
 	//////////////////////////// ReplaceParent ////////////////////////////
 	void ReplaceParent::_remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) {
+		Solution::Ptr parent( parents.first );
+		if (parent == population.front()) {
+			if (parents.second == population.front())
+				return;
+			parent = parents.second;
+		}
+			
 		Solution::Vector::iterator it = remove_if(population.begin(), population.end(),	bind1st(equal_to<Solution::Ptr>(), parents.first));
 		population.erase(it);
 	}
@@ -41,6 +48,8 @@ namespace GA {
 	//////////////////////////// ReplaceWorstParent ////////////////////////////
 	void ReplaceWorstParent::_remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) {
 		Solution::Ptr parent( *(parents.first) < *(parents.second) ? parents.first : parents.second );
+		if (parent == population.front())
+			return;
 		Solution::Vector::iterator it = remove_if(population.begin(), population.end(),	bind1st(equal_to<Solution::Ptr>(), parent));
 		population.erase(it);
 	}
