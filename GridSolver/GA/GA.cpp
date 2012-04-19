@@ -60,7 +60,7 @@ namespace GA {
 	GAHelper::GAHelper(CCmdLine& cmdLine) {
 		this->_selector = SelectionOp::create(cmdLine);
 		//	CrossoverOp* pCrossover	= CrossoverOp::Create(cmdLine);
-		//this->_mutator = MutationOp::create(cmdLine);
+		this->_mutator = MutationOp::create(cmdLine);
 		this->_replacer = ReplacementOp::create(cmdLine);
 	}
 
@@ -68,9 +68,8 @@ namespace GA {
 		return this->_selector->select(population);
 	}
 
-	bool GAHelper::mutate(Solution::Ptr pSolution, vector<int>& geneSet, int t, int T) {
-		//return this->_mutator->mutate(pSolution, geneSet, t, T
-		return false;
+	bool GAHelper::mutate(Solution::Ptr pSolution, vector<int>& geneSet, float progressRatio) {
+		return this->_mutator->mutate(pSolution, geneSet, progressRatio);
 	}
 
 	void GAHelper::replace(Solution::Vector& offsprings, vector<Solution::Pair>& parents, Solution::Vector& population) {

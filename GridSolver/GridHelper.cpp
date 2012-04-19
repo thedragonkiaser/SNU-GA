@@ -42,6 +42,7 @@ void GridHelper::readPoints()
 		this->values[j] = j;
     }
 	this->values.erase( remove_if(this->values.begin(), this->values.end(), bind1st(equal_to<int>(), 0)), this->values.end() );
+	sort(values.begin(), values.end());
 }
 
 int GridHelper::scoreGrid(GA::Solution::Ptr pSol)

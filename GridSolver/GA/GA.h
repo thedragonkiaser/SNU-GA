@@ -59,7 +59,7 @@ namespace GA {
 		GAHelper(CCmdLine& cmdLine);
 
 		Solution::Pair select(Solution::Vector& population);
-		bool mutate(Solution::Ptr pSolution, std::vector<int>& geneSet, int t, int T);
+		bool mutate(Solution::Ptr pSolution, std::vector<int>& geneSet, float progressRatio);
 		void replace(Solution::Vector& offsprings, std::vector<Solution::Pair>& parents, Solution::Vector& population);
 
 	protected:
