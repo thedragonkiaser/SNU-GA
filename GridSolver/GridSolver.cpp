@@ -125,7 +125,11 @@ int main(int argc, char* argv[]) {
 
 	//////// output
 	ofstream fout;
+#if defined (_TEST_)
+	fout.open(sOutput, fstream::out | fstream::app);
+#else
 	fout.open(sOutput, fstream::out | fstream::trunc);
+#endif
 	if (fout.is_open()) {
 		GA::Solution::Ptr pSol = population.front();
 		int size = (int)pSol->genotype.size();
