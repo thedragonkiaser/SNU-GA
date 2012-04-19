@@ -54,7 +54,7 @@ namespace GA {
 		int solIdx = -1;
 		set<int> indice;
 		while(indice.size() != this->_nCrowdSize)
-			indice.insert(rand() % population.size());
+			indice.insert(rand() % (population.size() - 1) + 1);
 
 		set<int>::iterator it = indice.begin();
 		for (; it != indice.end(); ++it) {
