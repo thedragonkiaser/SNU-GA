@@ -27,7 +27,7 @@ namespace GA {
 	Solution::Pair SelectionOp::select(Solution::Vector& population) {
 		Solution::Ptr p1 = population[this->_select(population)];
 		Solution::Ptr p2 = population[this->_select(population)];
-		if (p1 == p2)
+		while (p1 == p2)
 			p2 = population[this->_select(population)];
 
 		return make_pair(p1, p2);
@@ -56,6 +56,7 @@ namespace GA {
 				distances[i*size + k] = dist;
 			}
 		}
+		if (nLongestDist == 0) nLongestDist = 1;
 		
 		this->_fitnessSum = 0;
 		for (int i=0; i<size; ++i) {
@@ -67,6 +68,7 @@ namespace GA {
 				float ratio = (float)nDist / (float)nLongestDist;
 				sum += (1 - (float)pow(ratio, this->_sharingFactor));
 			}
+			if (sum == 0) sum = 1;
 			this->_fitness[i] /= sum;
 			this->_fitnessSum += this->_fitness[i];
 		}
