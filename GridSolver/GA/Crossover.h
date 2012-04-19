@@ -34,10 +34,28 @@ namespace GA {
 
 	class GeographicCrossover : public CrossoverOp {
 	public:
-		GeographicCrossover(CCmdLine& cmdLine) : CrossoverOp() {};
+		enum {
+			TR = 0, TL,
+			BL,	BR,	TB,	LR,
+			DIR
+		};
+		enum {
+			HOR = 0x01,
+			VER = 0x02,
+		};
+		enum {
+			X = 0,
+			Y
+		};
+
+	public:
+		GeographicCrossover(CCmdLine& cmdLine);
 		virtual ~GeographicCrossover() {}
 
 	protected:
 		virtual void _crossover(Solution::Pair& parents, Solution::Ptr p);
+
+	protected:
+		int _nCuts;
 	};
 }
