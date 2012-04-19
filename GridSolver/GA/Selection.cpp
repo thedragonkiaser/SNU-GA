@@ -27,7 +27,7 @@ namespace GA {
 	Solution::Pair SelectionOp::select(Solution::Vector& population) {
 		Solution::Ptr p1 = population[this->_select(population)];
 		Solution::Ptr p2 = population[this->_select(population)];
-		while (p1 == p2)
+		if (p1 == p2)
 			p2 = population[this->_select(population)];
 
 		return make_pair(p1, p2);

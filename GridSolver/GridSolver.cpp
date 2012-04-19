@@ -32,8 +32,6 @@ GA::Solution::Ptr genSolution() {
 
 int main(int argc, char* argv[]) {
 	time_t tStart = Utility::getMilliSec();
-	time_t tDuration = 600000 - 5000;
-	time_t tEnd = tStart + tDuration;
 
 	srand((unsigned int)time(NULL));
 
@@ -47,6 +45,9 @@ int main(int argc, char* argv[]) {
 	int k = cmdLine.HasSwitch("-k") ? Utility::strTo<int>( cmdLine.GetArgument("-k", 0) ) : 1;
 	bool bRepair = !cmdLine.HasSwitch("-noRepair");	
 	bool bPlot = cmdLine.HasSwitch("-plot");	
+
+	time_t tDuration = cmdLine.HasSwitch("-t") ? Utility::strTo<int>( cmdLine.GetArgument("-t", 0) ) : 600000 - 5000;
+	time_t tEnd = tStart + tDuration;
 
 	//////// parse input file
 	pGridHelper = new GridHelper;
@@ -64,9 +65,10 @@ int main(int argc, char* argv[]) {
 	int nGenerations = 0;
 	time_t tCurrent = tStart;
 
-	if (bPlot)
-		cout << "Generation\tBest\tCostAvg\tCostSTD\tDiffAvg\tDiffSTD" << endl;
-
+	if (bPlot) {
+		cout << "Generation\tPopSize\tBest\tCostAvg\tCostSTD\tDiffAvg\tDiffSTD" << endl;
+		cout.precision(4);
+	}
 	while (true) {
 		GA::Solution::Vector offsprings;
 		offsprings.reserve(k);
@@ -113,7 +115,8 @@ int main(int argc, char* argv[]) {
 			float fCostSTD = sqrt(fCostSum / population.size());
 			float fDiffSTD = sqrt(fDiffSum / population.size());
 
-			cout << nGenerations << "\t" << pBest->cost << "\t" <<
+			cout << nGenerations << "\t" << population.size() << "\t" <<
+				pBest->cost << "\t" << fixed <<
 				fCostAvg << "\t" << fCostSTD << "\t" <<
 				fDiffAvg << "\t" << fDiffSTD << endl;
 		}
