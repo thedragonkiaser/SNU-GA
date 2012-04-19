@@ -72,8 +72,7 @@ int main(int argc, char* argv[]) {
 			GA::Solution::Pair parents = ga.select(population);
 			parentsVec.push_back(parents);
 
-//			GA::Solution::Ptr pOffspring = pCrossover->crossover(parents);
-			GA::Solution::Ptr pOffspring = parents.first;
+			GA::Solution::Ptr pOffspring = ga.crossover(parents);
 
 			ga.mutate(pOffspring, pGridHelper->values, (float)(tCurrent - tStart) / (float)tDuration);
 

@@ -51,6 +51,7 @@ namespace GA {
 	};
 
 	class SelectionOp;
+	class CrossoverOp;
 	class ReplacementOp;
 	class MutationOp;
 
@@ -59,11 +60,13 @@ namespace GA {
 		GAHelper(CCmdLine& cmdLine);
 
 		Solution::Pair select(Solution::Vector& population);
+		Solution::Ptr crossover(Solution::Pair& parents);
 		bool mutate(Solution::Ptr pSolution, std::vector<int>& geneSet, float progressRatio);
 		void replace(Solution::Vector& offsprings, std::vector<Solution::Pair>& parents, Solution::Vector& population);
 
 	protected:
 		SelectionOp*	_selector;
+		CrossoverOp*	_crossover;
 		MutationOp*		_mutator;
 		ReplacementOp*	_replacer;
 	};

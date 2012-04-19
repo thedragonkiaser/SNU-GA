@@ -13,7 +13,7 @@ namespace GA {
 	}
 
 	MutationOp::MutationOp(CCmdLine& cmdLine) {
-		_threshold = (int)Utility::strTo<float>( cmdLine.GetArgument("-M", 1) ) * 10000;
+		_threshold = (int)(Utility::strTo<float>( cmdLine.GetArgument("-M", 1) ) * 10000);
 	}
 
 	bool MutationOp::mutate(Solution::Ptr pSolution, vector<int>& geneSet, float progressRatio) {
