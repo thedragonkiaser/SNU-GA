@@ -1,6 +1,7 @@
 #include "Replacement.h"
 #include "../lib/Utililty.h"
 #include <algorithm>
+#include <set>
 
 namespace GA {
 	//////////////////////////// ReplacementOp ////////////////////////////
@@ -10,7 +11,7 @@ namespace GA {
 			case Worst:			return new ReplaceWorst(cmdLine);
 			case Parent:		return new ReplaceParent(cmdLine);
 			case WorstParent:	return new ReplaceWorstParent(cmdLine);
-			case Crowding:		return NULL;
+			case Crowding:		return new ReplaceCrowd(cmdLine);
 		}
 		return NULL;
 	}
@@ -42,5 +43,28 @@ namespace GA {
 		Solution::Ptr parent( *(parents.first) < *(parents.second) ? parents.first : parents.second );
 		Solution::Vector::iterator it = remove_if(population.begin(), population.end(),	bind1st(equal_to<Solution::Ptr>(), parent));
 		population.erase(it);
+	}
+
+	//////////////////////////// ReplaceCrowding ////////////////////////////
+	ReplaceCrowd::ReplaceCrowd(CCmdLine& cmdLine) : ReplacementOp() {
+		this->_nCrowdSize = Utility::strTo<int>( cmdLine.GetArgument("-R", 1) );
+	}
+	void ReplaceCrowd::_remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) {
+		int minDiff = -1;
+		int solIdx = -1;
+		set<int> indice;
+		while(indice.size() != this->_nCrowdSize)
+			indice.insert(rand() % population.size());
+
+		set<int>::iterator it = indice.begin();
+		for (; it != indice.end(); ++it) {
+			int idx = *it;
+			int diff = pOffspring->getDistance(population[idx]);
+			if (minDiff == -1 || diff < minDiff) {
+				minDiff = diff;
+				solIdx = idx;
+			}
+		}
+		population.erase(population.begin() + solIdx);
 	}
 }

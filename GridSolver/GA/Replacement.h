@@ -50,4 +50,16 @@ namespace GA {
 	protected:
 		virtual void _remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population);
 	};
+
+	class ReplaceCrowd : public ReplacementOp {
+	public:
+		ReplaceCrowd(CCmdLine& cmdLine);
+		virtual ~ReplaceCrowd() {}
+
+	protected:
+		virtual void _remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population);
+
+	protected:
+		int _nCrowdSize;
+	};
 }
