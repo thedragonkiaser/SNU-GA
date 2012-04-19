@@ -32,7 +32,7 @@ GA::Solution::Ptr genSolution() {
 
 int main(int argc, char* argv[]) {
 	time_t tStart = Utility::getMilliSec();
-	time_t tDuration = 60000/*0*/ - 5000;
+	time_t tDuration = 600000 - 5000;
 	time_t tEnd = tStart + tDuration;
 
 	srand((unsigned int)time(NULL));
