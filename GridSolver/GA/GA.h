@@ -65,6 +65,7 @@ namespace GA {
 	public:
 		GAHelper(CCmdLine& cmdLine);
 
+		void generateFitness(Solution::Vector& population);
 		Solution::Pair select(Solution::Vector& population);
 		Solution::Ptr crossover(Solution::Pair& parents);
 		bool mutate(Solution::Ptr pSolution, int upperBound);

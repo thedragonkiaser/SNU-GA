@@ -79,4 +79,8 @@ namespace GA {
 	void GAHelper::replace(Solution::Vector& offsprings, vector<Solution::Pair>& parents, Solution::Vector& population) {
 		this->_replacer->replace(offsprings, parents, population);
 	}
+
+	void GAHelper::generateFitness(Solution::Vector& population) {
+		this->_selector->generateFitness(population);
+	}
 }

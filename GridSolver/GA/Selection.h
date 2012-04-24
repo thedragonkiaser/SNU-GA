@@ -16,6 +16,8 @@ namespace GA {
 		virtual ~SelectionOp() {};
 
 		static SelectionOp* create(CCmdLine& cmdLine);
+
+		virtual void generateFitness(Solution::Vector& population) {};
 		virtual Solution::Pair select(Solution::Vector& population);
 
 	protected:
@@ -27,7 +29,7 @@ namespace GA {
 		FitnessBasedSelector() : SelectionOp(), _fitnessSum(0), _isSharing(false), _sharingFactor(1) {};
 		virtual ~FitnessBasedSelector() {};
 
-		virtual Solution::Pair select(Solution::Vector& population);
+		virtual void generateFitness(Solution::Vector& population);
 
 	protected:
 		virtual void _generateFitness(Solution::Vector& population) = 0;

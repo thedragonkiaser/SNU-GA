@@ -93,6 +93,8 @@ int main(int argc, char* argv[]) {
 		parentsVec.reserve(k);
 
 		for (int i=0; i<k; ++i) {
+			if (i==0)
+				ga.generateFitness(population);
 			GA::Solution::Pair parents = ga.select(population);
 			parentsVec.push_back(parents);
 

@@ -12,6 +12,7 @@ namespace GA {
 			case Parent:		return new ReplaceParent(cmdLine);
 			case WorstParent:	return new ReplaceWorstParent(cmdLine);
 			case Crowding:		return new ReplaceCrowd(cmdLine);
+			case Strugle:		return new ReplaceStrugle(cmdLine);
 		}
 		return NULL;
 	}
@@ -82,29 +83,17 @@ namespace GA {
 		int minDiff = -1;
 		int solIdx = -1;
 
-		if (population.size() == this->_nCrowdSize) {
-			int size = population.size();
-			for (int i=0; i < size; ++i) {
-				int diff = pOffspring->getDistance(population[i]);
-				if (minDiff == -1 || diff < minDiff) {
-					minDiff = diff;
-					solIdx = i;
-				}
-			}
-		}
-		else {
-			set<int> indice;
-			while(indice.size() != this->_nCrowdSize)
-				indice.insert(rand() % (population.size() - 1) + 1);
+		set<int> indice;
+		while(indice.size() != this->_nCrowdSize)
+			indice.insert(rand() % (population.size() - 1) + 1);
 
-			set<int>::iterator it = indice.begin();
-			for (; it != indice.end(); ++it) {
-				int idx = *it;
-				int diff = pOffspring->getDistance(population[idx]);
-				if (minDiff == -1 || diff < minDiff) {
-					minDiff = diff;
-					solIdx = idx;
-				}
+		set<int>::iterator it = indice.begin();
+		for (; it != indice.end(); ++it) {
+			int idx = *it;
+			int diff = pOffspring->getDistance(population[idx]);
+			if (minDiff == -1 || diff < minDiff) {
+				minDiff = diff;
+				solIdx = idx;
 			}
 		}
 
@@ -116,6 +105,28 @@ namespace GA {
 		}
 		else 
 			population.erase(population.begin() + solIdx);
+
+		return true;
+	}
+
+	//////////////////////////// ReplaceStrugle ////////////////////////////
+	bool ReplaceStrugle::_remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) {
+		int minDiff = -1;
+		int solIdx = -1;
+
+		int size = population.size();
+		for (int i=0; i<size; ++i) {
+			int diff = pOffspring->getDistance(population[i]);
+			if (minDiff == -1 || diff < minDiff) {
+				minDiff = diff;
+				solIdx = i;
+			}
+		}
+		
+		if ( pOffspring->cost > population[solIdx]->cost )
+			population.erase(population.begin() + solIdx);
+		else
+			return false;
 
 		return true;
 	}

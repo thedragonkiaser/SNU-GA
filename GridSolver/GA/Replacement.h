@@ -11,7 +11,8 @@ namespace GA {
 			Worst = 0,
 			Parent,
 			WorstParent,
-			Crowding
+			Crowding,
+			Strugle
 		};
 	public:
 		ReplacementOp() {};
@@ -55,6 +56,19 @@ namespace GA {
 	public:
 		ReplaceCrowd(CCmdLine& cmdLine);
 		virtual ~ReplaceCrowd() {}
+
+	protected:
+		virtual bool _remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population);
+
+	protected:
+		int _nCrowdSize;
+		bool _bReplaceOnlyBetter;
+	};
+
+	class ReplaceStrugle : public ReplacementOp {
+	public:
+		ReplaceStrugle(CCmdLine& cmdLine) : ReplacementOp() {}
+		virtual ~ReplaceStrugle() {}
 
 	protected:
 		virtual bool _remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population);
