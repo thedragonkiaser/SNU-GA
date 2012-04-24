@@ -61,7 +61,7 @@ namespace GA {
 
 		Solution::Pair select(Solution::Vector& population);
 		Solution::Ptr crossover(Solution::Pair& parents);
-		bool mutate(Solution::Ptr pSolution, std::vector<int>& geneSet, float progressRatio);
+		bool mutate(Solution::Ptr pSolution, int upperBound);
 		void replace(Solution::Vector& offsprings, std::vector<Solution::Pair>& parents, Solution::Vector& population);
 
 	protected:

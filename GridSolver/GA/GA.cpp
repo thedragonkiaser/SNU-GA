@@ -72,8 +72,8 @@ namespace GA {
 	Solution::Ptr GAHelper::crossover(Solution::Pair& parents) {
 		return this->_crossover->crossover(parents);
 	}
-	bool GAHelper::mutate(Solution::Ptr pSolution, vector<int>& geneSet, float progressRatio) {
-		return this->_mutator->mutate(pSolution, geneSet, progressRatio);
+	bool GAHelper::mutate(Solution::Ptr pSolution, int upperBound) {
+		return this->_mutator->mutate(pSolution, upperBound);
 	}
 
 	void GAHelper::replace(Solution::Vector& offsprings, vector<Solution::Pair>& parents, Solution::Vector& population) {

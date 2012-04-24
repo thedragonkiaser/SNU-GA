@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
 
 			GA::Solution::Ptr pOffspring = ga.crossover(parents);
 
-			ga.mutate(pOffspring, pGridHelper->values, (float)(tCurrent - tStart) / (float)tDuration);
+			ga.mutate(pOffspring, pGridHelper->nn);
 
 			pOffspring->cost = pGridHelper->scoreGrid(pOffspring);
 			offsprings.push_back(pOffspring);

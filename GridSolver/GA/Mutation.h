@@ -16,10 +16,10 @@ namespace GA {
 		virtual ~MutationOp() {};
 
 		static MutationOp* create(CCmdLine& cmdLine);
-		virtual bool mutate(Solution::Ptr pSolution, std::vector<int>& geneSet, float progressRatio);
+		virtual bool mutate(Solution::Ptr pSolution, int upperBound);
 
 	protected:
-		virtual int _mutate(int gene, std::vector<int>& geneSet, float progressRatio) = 0;
+		virtual int _mutate(int gene, int upperBound) = 0;
 
 	protected:
 		int _threshold;
@@ -31,6 +31,6 @@ namespace GA {
 		virtual ~UniformMutation() {}
 
 	protected:
-		virtual int _mutate(int gene, std::vector<int>& geneSet, float progressRatio);
+		virtual int _mutate(int gene, int upperBound);
 	};
 }

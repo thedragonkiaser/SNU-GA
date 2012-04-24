@@ -16,19 +16,19 @@ namespace GA {
 		_threshold = (int)(Utility::strTo<float>( cmdLine.GetArgument("-M", 1) ) * 10000);
 	}
 
-	bool MutationOp::mutate(Solution::Ptr pSolution, vector<int>& geneSet, float progressRatio) {
+	bool MutationOp::mutate(Solution::Ptr pSolution, int upperBound) {
 		bool bMutated = false;
 		vector<int>::iterator it = pSolution->genotype.begin();
 		for(; it != pSolution->genotype.end(); ++it) {
 			if (rand()%10000 < this->_threshold) {
-				*it = this->_mutate(*it, geneSet, progressRatio);
+				*it = this->_mutate(*it, upperBound);
 				bMutated = true;
 			}
 		}
 		return bMutated;
 	}
 
-	int UniformMutation::_mutate(int gene, vector<int>& geneSet, float progressRatio) {
-		return geneSet[ rand() % geneSet.size() ];
+	int UniformMutation::_mutate(int gene, int upperBound) {
+		return rand() % upperBound;
 	}
 }
