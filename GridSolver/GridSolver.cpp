@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
 			GA::Solution::Ptr pMedian = population[population.size() / 2];
 			GA::Solution::Ptr pWorst = population.back();
 
-			int nCostSum = 0;
+			long long nCostSum = 0;
 			vector<int> solutionDiff;
 			solutionDiff.reserve(population.size() * population.size());
 			GA::Solution::Vector::iterator it = population.begin();
