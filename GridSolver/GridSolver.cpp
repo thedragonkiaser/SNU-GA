@@ -44,7 +44,8 @@ int main(int argc, char* argv[]) {
 	int n = cmdLine.HasSwitch("-n") ? Utility::strTo<int>( cmdLine.GetArgument("-n", 0) ) : 5;
 	int k = cmdLine.HasSwitch("-k") ? Utility::strTo<int>( cmdLine.GetArgument("-k", 0) ) : 1;
 	bool bRepair = !cmdLine.HasSwitch("-noRepair");	
-	bool bPlot = cmdLine.HasSwitch("-plot");	
+	bool bPlot = cmdLine.HasSwitch("-plot");
+	int nPlotUnit = bPlot ? Utility::strTo<int>( cmdLine.GetArgument("-plot", 0) ) : 0;
 
 	time_t tDuration = cmdLine.HasSwitch("-t") ? Utility::strTo<int>( cmdLine.GetArgument("-t", 0) ) : 600000 - 5000;
 	time_t tEnd = tStart + tDuration;
@@ -91,7 +92,7 @@ int main(int argc, char* argv[]) {
 
 		++nGenerations;
 
-		if (bPlot) {
+		if (bPlot && nGenerations % nPlotUnit == 0) {
 			int nCostSum = 0;
 			int nDiffSum = 0;
 			GA::Solution::Ptr pBest = population.front();
@@ -145,6 +146,7 @@ int main(int argc, char* argv[]) {
 
 #if defined (_TEST_)
 		fout << endl;
+		fout << "Generations: " << nGenerations << endl;
 		fout << "Score : " << pSol->cost << endl;
 		for (int i=0; i<argc; ++i)
 			fout << argv[i] << " ";

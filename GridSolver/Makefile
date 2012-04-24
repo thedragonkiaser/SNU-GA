@@ -13,7 +13,7 @@ all: $(OBJECTS)
 	$(CXX) -c $< $(CXXFLAGS)
 
 run: $(TARGET)
-	./$(TARGET) -i packing.in -o packing.out -n 10 -k 1 -plot -S 2 2.0 1.0 1 1 -X 1 2 -M 0 0.015 -R 2 
+	./$(TARGET) -i packing.in.1 -o packing.out.1 -t 60000 -n 100 -k 1 -plot 1000 -S 2 2.0 1.0 1 1 -X 1 4 -M 0 0.015 -R 2 
 
 clean:
 	rm $(OBJECTS) $(TARGET)
