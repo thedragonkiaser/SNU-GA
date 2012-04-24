@@ -18,15 +18,21 @@ namespace GA {
 
 	void ReplacementOp::replace(Solution::Vector& offsprings, vector<Solution::Pair>& parents, Solution::Vector& population) {
 		int nSize = (int)offsprings.size();
+		vector<int> replace;
+		replace.reserve(nSize);
 		for (int i=0; i<nSize; ++i) {
 			Solution::Ptr pOffspring(offsprings[i]);
 
+			bool bReplace = false;
 			Solution::Vector::iterator it = find_if(population.begin(), population.end(), bind1st(SolutionPtrEqual(), pOffspring));
-			if (it != population.end())
-				continue;
+			if (it == population.end()) 
+				bReplace = this->_remove(pOffspring, parents[i], population);
+			replace.push_back(bReplace ? 1 : 0);
+		}
 
-			bool bReplace = this->_remove(pOffspring, parents[i], population);
-			if (bReplace) {
+		for (int i=0; i<nSize; ++i) {
+			Solution::Ptr pOffspring(offsprings[i]);
+			if (replace[i]) {
 				Solution::Vector::iterator it = find_if(population.begin(), population.end(), bind1st(SolutionPtrGreater(), pOffspring));
 				population.insert(it, pOffspring);
 			}
@@ -42,7 +48,13 @@ namespace GA {
 	//////////////////////////// ReplaceParent ////////////////////////////
 	bool ReplaceParent::_remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) {			
 		Solution::Vector::iterator it = remove_if(population.begin(), population.end(),	bind1st(equal_to<Solution::Ptr>(), parents.first));
-		population.erase(it);
+		if (it == population.end())
+			it = remove_if(population.begin(), population.end(),	bind1st(equal_to<Solution::Ptr>(), parents.second));
+
+		if (it == population.end())
+			population.pop_back();
+		else
+			population.erase(it);
 		return true;
 	}
 
@@ -50,7 +62,13 @@ namespace GA {
 	bool ReplaceWorstParent::_remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) {
 		Solution::Ptr parent( *(parents.first) < *(parents.second) ? parents.first : parents.second );
 		Solution::Vector::iterator it = remove_if(population.begin(), population.end(),	bind1st(equal_to<Solution::Ptr>(), parent));
-		population.erase(it);
+		if (it == population.end())
+			it = remove_if(population.begin(), population.end(), bind1st(equal_to<Solution::Ptr>(), *(parents.first) < *(parents.second) ? parents.second : parents.first));
+
+		if (it == population.end())
+			population.pop_back();
+		else
+			population.erase(it);
 		return true;
 	}
 

@@ -66,9 +66,11 @@ int main(int argc, char* argv[]) {
 	time_t tCurrent = tStart;
 
 	if (bPlot) {
-		cout << "Generation\tPopSize\tBest\tMedian\tWorst"
+		cout << "Gen\tSize\tBest\tMed\tWorst\t"
 			<< "CostAvg\tCostSTD\t"
-			<< "DiffAvg\tDiffSTD" << endl;
+			<< "DiffAvg\tDiffSTD\t"
+			<< "XEffAvg\tXEffSTD"
+			<< endl;
 		cout.precision(4);
 	}
 	while (true) {
@@ -94,36 +96,51 @@ int main(int argc, char* argv[]) {
 		++nGenerations;
 
 		if (bPlot && nGenerations % nPlotUnit == 0) {
-			int nCostSum = 0;
-			int nDiffSum = 0;
+			
 			GA::Solution::Ptr pBest = population.front();
 			GA::Solution::Ptr pMedian = population[population.size() / 2];
 			GA::Solution::Ptr pWorst = population.back();
+
+			int nCostSum = 0;
+			vector<int> solutionDiff;
+			solutionDiff.reserve(population.size() * population.size());
 			GA::Solution::Vector::iterator it = population.begin();
 			for (; it != population.end(); ++it) {
 				nCostSum += (*it)->cost;
-				nDiffSum += pBest->getDistance(*it);
+				GA::Solution::Vector::iterator kit = population.begin();
+				for (; kit != population.end(); ++kit)
+					solutionDiff.push_back((*it)->getDistance(*kit));
+			}
+
+			vector<int> crossEffects;
+			solutionDiff.reserve(offsprings.size());
+			for (int i=0; i<offsprings.size(); ++i) {
+				int effect = offsprings[i]->getDistance(parentsVec[i].first) + offsprings[i]->getDistance(parentsVec[i].second);
+				crossEffects.push_back( effect / 2 );
 			}
 
 			float fCostAvg = (float)nCostSum / population.size();
-			float fDiffAvg = (float)nDiffSum / population.size();
-
-			float fCostSum = 0;
-			float fDiffSum = 0;
+			float fCostDev = 0;
 			it = population.begin();
-			for (; it != population.end(); ++it) {
-				fCostSum += pow(((*it)->cost - fCostAvg), 2);
-				fDiffSum += pow((pBest->getDistance(*it) - fDiffAvg), 2);
-			}
+			for (; it != population.end(); ++it)
+				fCostDev += pow(((*it)->cost - fCostAvg), 2);
 
-			float fCostSTD = sqrt(fCostSum / population.size());
-			float fDiffSTD = sqrt(fDiffSum / population.size());
+			float fDiffAvg = accumulate(solutionDiff.begin(), solutionDiff.end(), 0) / solutionDiff.size();
+			float fDiffDev = 0;
+			for (int i=0; i<solutionDiff.size(); ++i)
+				fDiffDev += pow((solutionDiff[i]- fDiffAvg) , 2);
 
+			float fXEffectAvg = accumulate(crossEffects.begin(), crossEffects.end(), 0) / crossEffects.size();
+			float fXEffectDev = 0;
+			for (int i=0; i<crossEffects.size(); ++i)
+				fXEffectDev += pow((crossEffects[i]- fXEffectAvg) , 2);
+			
 			cout << nGenerations << "\t" << population.size() << "\t" <<
 				pBest->cost << "\t" << pMedian->cost << "\t" << pWorst->cost << "\t"
 				<< fixed
-				<< fCostAvg << "\t" << fCostSTD << "\t" 
-				<< fDiffAvg << "\t" << fDiffSTD << endl;
+				<< fCostAvg << "\t" << sqrt(fCostDev / population.size()) << "\t" 
+				<< fDiffAvg << "\t" << sqrt(fDiffDev / solutionDiff.size()) << "\t"
+				<< fXEffectAvg << "\t" << sqrt(fXEffectDev / crossEffects.size()) << endl;
 		}
 
 		tCurrent = Utility::getMilliSec();
