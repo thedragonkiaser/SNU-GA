@@ -21,7 +21,7 @@ namespace GA {
 		virtual void replace(Solution::Vector& offsprings, std::vector<Solution::Pair>& parents, Solution::Vector& population);
 
 	protected:
-		virtual void _remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) = 0;
+		virtual bool _remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) = 0;
 	};
 
 	class ReplaceWorst : public ReplacementOp {
@@ -30,7 +30,7 @@ namespace GA {
 		virtual ~ReplaceWorst() {}
 
 	protected:
-		virtual void _remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population);
+		virtual bool _remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population);
 	};
 
 	class ReplaceParent : public ReplacementOp {
@@ -39,7 +39,7 @@ namespace GA {
 		virtual ~ReplaceParent() {}
 
 	protected:
-		virtual void _remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population);
+		virtual bool _remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population);
 	};
 
 	class ReplaceWorstParent : public ReplacementOp {
@@ -48,7 +48,7 @@ namespace GA {
 		virtual ~ReplaceWorstParent() {}
 
 	protected:
-		virtual void _remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population);
+		virtual bool _remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population);
 	};
 
 	class ReplaceCrowd : public ReplacementOp {
@@ -57,9 +57,10 @@ namespace GA {
 		virtual ~ReplaceCrowd() {}
 
 	protected:
-		virtual void _remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population);
+		virtual bool _remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population);
 
 	protected:
 		int _nCrowdSize;
+		bool _bReplaceOnlyBetter;
 	};
 }

@@ -19,8 +19,7 @@ using namespace std;
 GridHelper* pGridHelper;
 
 int genGenes() {
-	int idx = rand() % pGridHelper->values.size();
-	return pGridHelper->values[idx];
+	return rand() % pGridHelper->nn;
 }
 
 GA::Solution::Ptr genSolution() {
@@ -67,7 +66,9 @@ int main(int argc, char* argv[]) {
 	time_t tCurrent = tStart;
 
 	if (bPlot) {
-		cout << "Generation\tPopSize\tBest\tCostAvg\tCostSTD\tDiffAvg\tDiffSTD" << endl;
+		cout << "Generation\tPopSize\tBest\tMedian\tWorst"
+			<< "CostAvg\tCostSTD\t"
+			<< "DiffAvg\tDiffSTD" << endl;
 		cout.precision(4);
 	}
 	while (true) {
@@ -96,6 +97,8 @@ int main(int argc, char* argv[]) {
 			int nCostSum = 0;
 			int nDiffSum = 0;
 			GA::Solution::Ptr pBest = population.front();
+			GA::Solution::Ptr pMedian = population[population.size() / 2];
+			GA::Solution::Ptr pWorst = population.back();
 			GA::Solution::Vector::iterator it = population.begin();
 			for (; it != population.end(); ++it) {
 				nCostSum += (*it)->cost;
@@ -117,9 +120,10 @@ int main(int argc, char* argv[]) {
 			float fDiffSTD = sqrt(fDiffSum / population.size());
 
 			cout << nGenerations << "\t" << population.size() << "\t" <<
-				pBest->cost << "\t" << fixed <<
-				fCostAvg << "\t" << fCostSTD << "\t" <<
-				fDiffAvg << "\t" << fDiffSTD << endl;
+				pBest->cost << "\t" << pMedian->cost << "\t" << pWorst->cost << "\t"
+				<< fixed
+				<< fCostAvg << "\t" << fCostSTD << "\t" 
+				<< fDiffAvg << "\t" << fDiffSTD << endl;
 		}
 
 		tCurrent = Utility::getMilliSec();

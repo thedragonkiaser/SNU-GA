@@ -50,6 +50,12 @@ namespace GA {
 		}
 	};
 
+	struct SolutionPtrEqual : std::binary_function<Solution::Ptr, Solution::Ptr, bool> {
+		bool operator()(const Solution::Ptr& lhs, const Solution::Ptr& rhs) const {
+			return *lhs == *rhs;
+		}
+	};
+
 	class SelectionOp;
 	class CrossoverOp;
 	class ReplacementOp;
