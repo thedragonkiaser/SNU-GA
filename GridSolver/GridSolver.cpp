@@ -45,6 +45,7 @@ int main(int argc, char* argv[]) {
 	bool bRepair = !cmdLine.HasSwitch("-noRepair");	
 	bool bPlot = cmdLine.HasSwitch("-plot");
 	int nPlotUnit = bPlot ? Utility::strTo<int>( cmdLine.GetArgument("-plot", 0) ) : 0;
+	bool bDynamicGap = cmdLine.HasSwitch("-dggap");
 
 	time_t tDuration = cmdLine.HasSwitch("-t") ? Utility::strTo<int>( cmdLine.GetArgument("-t", 0) ) : 600000 - 5000;
 	time_t tEnd = tStart + tDuration;
@@ -73,7 +74,18 @@ int main(int argc, char* argv[]) {
 			<< endl;
 		cout.precision(4);
 	}
+
+	if (bDynamicGap)
+		k = population.size() * 0.9;
+
 	while (true) {
+		if (bDynamicGap) {
+			float remainRatio = (float)(tEnd - tCurrent) / (float)(tEnd - tStart);
+			if (remainRatio > 0.9) remainRatio = 0.9;
+			if (remainRatio < 0.1) remainRatio = 0.1;
+			k = population.size() * remainRatio;
+		}
+
 		GA::Solution::Vector offsprings;
 		offsprings.reserve(k);
 
@@ -96,7 +108,6 @@ int main(int argc, char* argv[]) {
 		++nGenerations;
 
 		if (bPlot && nGenerations % nPlotUnit == 0) {
-			
 			GA::Solution::Ptr pBest = population.front();
 			GA::Solution::Ptr pMedian = population[population.size() / 2];
 			GA::Solution::Ptr pWorst = population.back();
