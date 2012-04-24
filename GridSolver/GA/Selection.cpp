@@ -34,10 +34,9 @@ namespace GA {
 	}
 
 	//////////////////////////// FinessBasedSelector ////////////////////////////
-	Solution::Pair FitnessBasedSelector::select(Solution::Vector& population) {
+	void FitnessBasedSelector::generateFitness(Solution::Vector& population) {
 		this->_generateFitness(population);
-		this->_sharingFitness(population);
-		return SelectionOp::select(population);
+		if (this->_isSharing) this->_sharingFitness(population);
 	}
 
 	void FitnessBasedSelector::_sharingFitness(Solution::Vector& population) {
@@ -50,7 +49,14 @@ namespace GA {
 		vector<int> distances(size * size, 0);
 		for (int i=0; i<size; ++i) {
 			for (int k=0; k<size; ++k) {
-				int dist = population[i]->getDistance(population[k]);
+				int dist = 0;
+				if (k < i)
+					dist = distances[k*size + i];
+				else if (k > i)
+					dist = population[i]->getDistance(population[k]);
+				else
+					dist = 0;
+
 				if (dist > nLongestDist)
 					nLongestDist = dist;
 				distances[i*size + k] = dist;
