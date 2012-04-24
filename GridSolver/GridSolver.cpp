@@ -69,6 +69,7 @@ int main(int argc, char* argv[]) {
 	if (bPlot) {
 		cout << "Gen\tSize\tBest\tMed\tWorst\t"
 			<< "CostAvg\tCostSTD\t"
+			<< "SelAvg\tSelSTD\t"
 			<< "DiffAvg\tDiffSTD\t"
 			<< "XEffAvg\tXEffSTD"
 			<< endl;
@@ -125,6 +126,12 @@ int main(int argc, char* argv[]) {
 					solutionDiff.push_back((*it)->getDistance(*kit));
 			}
 
+			long long nSelCostSum = 0;
+			for (int i=0; i<parentsVec.size(); ++i) {
+				nSelCostSum += parentsVec[i].first->cost;
+				nSelCostSum += parentsVec[i].second->cost;
+			}
+
 			vector<int> crossEffects;
 			solutionDiff.reserve(offsprings.size());
 			for (int i=0; i<offsprings.size(); ++i) {
@@ -137,6 +144,13 @@ int main(int argc, char* argv[]) {
 			it = population.begin();
 			for (; it != population.end(); ++it)
 				fCostDev += pow(((*it)->cost - fCostAvg), 2);
+
+			float fSelCostAvg = (float)nSelCostSum / (parentsVec.size() * 2);
+			float fSelCostDev = 0;
+			for (int i=0; i<parentsVec.size(); ++i) {
+				fSelCostDev += pow((parentsVec[i].first->cost - fSelCostAvg), 2);
+				fSelCostDev += pow((parentsVec[i].second->cost - fSelCostAvg), 2);
+			}
 
 			float fDiffAvg = accumulate(solutionDiff.begin(), solutionDiff.end(), 0) / solutionDiff.size();
 			float fDiffDev = 0;
@@ -152,6 +166,7 @@ int main(int argc, char* argv[]) {
 				pBest->cost << "\t" << pMedian->cost << "\t" << pWorst->cost << "\t"
 				<< fixed
 				<< fCostAvg << "\t" << sqrt(fCostDev / population.size()) << "\t" 
+				<< fSelCostAvg << "\t" << sqrt(fSelCostDev / (parentsVec.size() * 2)) << "\t" 
 				<< fDiffAvg << "\t" << sqrt(fDiffDev / solutionDiff.size()) << "\t"
 				<< fXEffectAvg << "\t" << sqrt(fXEffectDev / crossEffects.size()) << endl;
 		}
