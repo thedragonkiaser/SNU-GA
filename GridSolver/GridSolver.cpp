@@ -46,6 +46,7 @@ int main(int argc, char* argv[]) {
 	bool bPlot = cmdLine.HasSwitch("-plot");
 	int nPlotUnit = bPlot ? Utility::strTo<int>( cmdLine.GetArgument("-plot", 0) ) : 0;
 	bool bDynamicGap = cmdLine.HasSwitch("-dggap");
+	bool bReshuffle = cmdLine.HasSwitch("-reshuffle");
 
 	time_t tDuration = cmdLine.HasSwitch("-t") ? Utility::strTo<int>( cmdLine.GetArgument("-t", 0) ) : 600000 - 5000;
 	time_t tEnd = tStart + tDuration;
@@ -79,6 +80,8 @@ int main(int argc, char* argv[]) {
 	if (bDynamicGap)
 		k = population.size() * 0.9;
 
+	int nBestCost = population.front()->cost;
+	int nGensWithNoImprove = 0;
 	while (true) {
 		if (bDynamicGap) {
 			float remainRatio = (float)(tEnd - tCurrent) / (float)(tEnd - tStart);
@@ -109,6 +112,20 @@ int main(int argc, char* argv[]) {
 		ga.replace(offsprings, parentsVec, population);
 
 		++nGenerations;
+
+		if (population.front()->cost > nBestCost) {
+			nGensWithNoImprove = 0;
+			nBestCost = population.front()->cost;
+		}
+		else
+			++nGensWithNoImprove;
+
+		if (nGensWithNoImprove == 100 && bReshuffle) {
+			population.erase(population.begin() + population.size() / 2, population.end());
+			generate_n(back_inserter(population), n - population.size(), genSolution);
+			sort(population.begin(), population.end(), GA::SolutionPtrGreater());
+			nGensWithNoImprove = 0;
+		}
 
 		if (bPlot && nGenerations % nPlotUnit == 0) {
 			GA::Solution::Ptr pBest = population.front();
