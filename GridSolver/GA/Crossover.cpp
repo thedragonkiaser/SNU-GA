@@ -27,18 +27,16 @@ namespace GA {
 		this->_nColCuts = Utility::strTo<int>( cmdLine.GetArgument("-X", 2) );
 	}
 
-	Solution::Ptr CrossoverOp::crossover(Solution::Pair& parents) {
-		Solution::Ptr p = make_shared<Solution>(parents.first->width, parents.first->height);
-		this->_crossover(parents, p);
-		return p;
+	Solution::Ptr CrossoverOp::crossover(Solution::Pair& parents, Solution::Ptr pSolution) {
+		this->_crossover(parents, pSolution);
+		return pSolution;
 	}
 	
 	int randomBinary() { return rand() % 2; }
-	int zero() {return 0;}
 
 	void BlockUniformCrossover::_crossover(Solution::Pair& parents, Solution::Ptr p) {
 		Solution::Ptr parentArray[2] = {parents.first, parents.second};
-		generate_n(back_inserter(p->genotype), parents.first->genotype.size(), zero);
+		fill_n(p->genotype.begin(), parents.first->genotype.size(), 0);
 
 		int nRowCuts = this->_nRowCuts;
 		if (nRowCuts == 0) nRowCuts = rand() % p->height;
@@ -100,7 +98,7 @@ namespace GA {
 	void GeographicCrossover::_crossover(Solution::Pair& parents, Solution::Ptr p) {
 		Solution::Ptr parentArray[2] = {parents.first, parents.second};
 		int size = parents.first->genotype.size();
-		generate_n(back_inserter(p->genotype), size, zero);
+		fill_n(p->genotype.begin(), size, 0);
 
 		static int MARKER[2] = {HOR, VER};
 		static int aDir[DIR][4] = {

@@ -13,7 +13,7 @@ namespace GA {
 	public:
 		static CrossoverOp* create(CCmdLine& cmdLine);
 
-		virtual Solution::Ptr crossover(Solution::Pair& parents);
+		virtual Solution::Ptr crossover(Solution::Pair& parents, Solution::Ptr pSolution);
 
 	protected:
 		virtual void _crossover(Solution::Pair& parents, Solution::Ptr p) = 0;

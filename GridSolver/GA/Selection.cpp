@@ -24,13 +24,15 @@ namespace GA {
 		return NULL;
 	}
 
-	Solution::Pair SelectionOp::select(Solution::Vector& population) {
+	Solution::Pair SelectionOp::select(Solution::Vector& population, Solution::Pair& parents) {
 		Solution::Ptr p1 = population[this->_select(population)];
 		Solution::Ptr p2 = population[this->_select(population)];
 		while (p1 == p2)
 			p2 = population[this->_select(population)];
 
-		return make_pair(p1, p2);
+		*parents.first = *p1;
+		*parents.second = *p2;
+		return parents;
 	}
 
 	//////////////////////////// FinessBasedSelector ////////////////////////////

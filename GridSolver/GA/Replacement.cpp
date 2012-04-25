@@ -30,7 +30,7 @@ namespace GA {
 				bReplace = this->_remove(pOffspring, parents[i], population);
 			replace.push_back(bReplace ? 1 : 0);
 		}
-
+		/*
 		for (int i=0; i<nSize; ++i) {
 			Solution::Ptr pOffspring(offsprings[i]);
 			if (replace[i]) {
@@ -38,11 +38,14 @@ namespace GA {
 				population.insert(it, pOffspring);
 			}
 		}
+		*/
+		sort(population.begin(), population.end(), GA::SolutionPtrGreater());
 	}
 
 	//////////////////////////// ReplaceWorst ////////////////////////////
 	bool ReplaceWorst::_remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) {
-		population.pop_back();
+		//population.pop_back();
+		*population[population.size() - 1] = *pOffspring;
 		return true;
 	}
 
@@ -50,12 +53,12 @@ namespace GA {
 	bool ReplaceParent::_remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) {			
 		Solution::Vector::iterator it = remove_if(population.begin(), population.end(),	bind1st(equal_to<Solution::Ptr>(), parents.first));
 		if (it == population.end())
-			it = remove_if(population.begin(), population.end(),	bind1st(equal_to<Solution::Ptr>(), parents.second));
+			it = remove_if(population.begin(), population.end(), bind1st(equal_to<Solution::Ptr>(), parents.second));
 
 		if (it == population.end())
-			population.pop_back();
+			*population[population.size() - 1] = *pOffspring;
 		else
-			population.erase(it);
+			**it = *pOffspring;
 		return true;
 	}
 
@@ -67,9 +70,9 @@ namespace GA {
 			it = remove_if(population.begin(), population.end(), bind1st(equal_to<Solution::Ptr>(), *(parents.first) < *(parents.second) ? parents.second : parents.first));
 
 		if (it != population.end() && it != population.begin())
-			population.erase(it);
+			**it = *pOffspring;
 		else
-			population.pop_back();
+			*population[population.size() - 1] = *pOffspring;
 		return true;
 	}
 
@@ -99,12 +102,12 @@ namespace GA {
 
 		if (this->_bReplaceOnlyBetter) {
 			if ( pOffspring->cost > population[solIdx]->cost )
-				population.erase(population.begin() + solIdx);
+				*population[solIdx] = *pOffspring;
 			else
 				return false;
 		}
-		else 
-			population.erase(population.begin() + solIdx);
+		else
+			*population[solIdx] = *pOffspring;
 
 		return true;
 	}
@@ -124,7 +127,7 @@ namespace GA {
 		}
 		
 		if ( pOffspring->cost > population[solIdx]->cost )
-			population.erase(population.begin() + solIdx);
+			*population[solIdx] = *pOffspring;
 		else
 			return false;
 

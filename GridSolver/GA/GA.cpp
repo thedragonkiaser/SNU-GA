@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <assert.h>
+#include <iterator>
 
 #include "GA.h"
 #include "Selection.h"
@@ -13,9 +14,12 @@ namespace GA {
 		: width(0), height(0), cost(0)
 	{}
 
+	int zero() {return 0;}
+
 	Solution::Solution(int w, int h)
 		: width(w), height(h), cost(0) {
 		genotype.reserve( width * height );
+		generate_n(back_inserter(genotype), width * height, zero);
 	}
 
 	// Methods
@@ -45,6 +49,11 @@ namespace GA {
 	}
 
 	// Operators
+	Solution& Solution::operator =(const Solution& rhs) {
+		copy(rhs.genotype.begin(), rhs.genotype.end(), this->genotype.begin());
+		this->cost = rhs.cost;
+		return *this;
+	}
 	bool Solution::operator ==(const Solution& other) const {
 		return equal(this->genotype.begin(), this->genotype.end(), other.genotype.begin());
     }
@@ -65,12 +74,12 @@ namespace GA {
 		this->_replacer = ReplacementOp::create(cmdLine);
 	}
 
-	Solution::Pair GAHelper::select(Solution::Vector& population) {
-		return this->_selector->select(population);
+	Solution::Pair GAHelper::select(Solution::Vector& population, Solution::Pair& parents) {
+		return this->_selector->select(population, parents);
 	}
 
-	Solution::Ptr GAHelper::crossover(Solution::Pair& parents) {
-		return this->_crossover->crossover(parents);
+	Solution::Ptr GAHelper::crossover(Solution::Pair& parents, Solution::Ptr pSolution) {
+		return this->_crossover->crossover(parents, pSolution);
 	}
 	bool GAHelper::mutate(Solution::Ptr pSolution, int upperBound) {
 		return this->_mutator->mutate(pSolution, upperBound);
