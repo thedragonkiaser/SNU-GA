@@ -116,7 +116,7 @@ namespace GA {
 		
 		vector<int> cuts(size, 0);
 		if (this->_nCuts == 0)
-			this->_nCuts = w > h ? w / 4 : h / 4;
+			this->_nCuts = sqrt( sqrt((double)size) );
 
 		for (int n=0; n<this->_nCuts; ++n) {
 			int s, t;
