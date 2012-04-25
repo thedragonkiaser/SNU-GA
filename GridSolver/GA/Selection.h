@@ -18,7 +18,7 @@ namespace GA {
 		static SelectionOp* create(CCmdLine& cmdLine);
 
 		virtual void generateFitness(Solution::Vector& population) {};
-		virtual Solution::Pair select(Solution::Vector& population, Solution::Pair& parents);
+		virtual Solution::Pair select(Solution::Vector& population);
 
 	protected:
 		virtual int _select(Solution::Vector& population) = 0;

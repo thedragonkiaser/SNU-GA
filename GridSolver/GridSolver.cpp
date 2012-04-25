@@ -24,8 +24,7 @@ int genGenes() {
 
 GA::Solution::Ptr genSolution() {
 	GA::Solution::Ptr p = make_shared<GA::Solution>(pGridHelper->columns, pGridHelper->rows);
-	for (int i=0; i<p->genotype.size(); ++i)
-		p->genotype[i] = rand() % pGridHelper->nn;
+	generate_n(back_inserter(p->genotype), p->width * p->height, genGenes);
 	p->cost = pGridHelper->scoreGrid(p);
 	return p;
 }
@@ -83,11 +82,6 @@ int main(int argc, char* argv[]) {
 
 	int nBestCost = population.front()->cost;
 	int nGensWithNoImprove = 0;
-
-	GA::Solution::Vector offsprings(k, make_shared<GA::Solution>(pGridHelper->columns, pGridHelper->rows));
-	vector<GA::Solution::Pair> parentsVec( k,
-		make_pair( make_shared<GA::Solution>(pGridHelper->columns, pGridHelper->rows),
-					make_shared<GA::Solution>(pGridHelper->columns, pGridHelper->rows) ));
 	while (true) {
 		if (bDynamicGap) {
 			float remainRatio = (float)(tEnd - tCurrent) / (float)(tEnd - tStart);
@@ -96,13 +90,24 @@ int main(int argc, char* argv[]) {
 			k = population.size() * remainRatio;
 		}
 
+		GA::Solution::Vector offsprings;
+		offsprings.reserve(k);
+
+		vector<GA::Solution::Pair> parentsVec;
+		parentsVec.reserve(k);
+
 		for (int i=0; i<k; ++i) {
 			if (i==0)
 				ga.generateFitness(population);
-			ga.select(population, parentsVec[i]);
-			ga.crossover(parentsVec[i], offsprings[i]);
-			ga.mutate(offsprings[i], pGridHelper->nn);
-			offsprings[i]->cost = pGridHelper->scoreGrid(offsprings[i]);
+			GA::Solution::Pair parents = ga.select(population);
+			parentsVec.push_back(parents);
+
+			GA::Solution::Ptr pOffspring = ga.crossover(parents);
+
+			ga.mutate(pOffspring, pGridHelper->nn);
+
+			pOffspring->cost = pGridHelper->scoreGrid(pOffspring);
+			offsprings.push_back(pOffspring);
 		}
 		ga.replace(offsprings, parentsVec, population);
 

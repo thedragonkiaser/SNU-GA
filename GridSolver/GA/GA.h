@@ -32,7 +32,6 @@ namespace GA {
 		int getDistance(Ptr pSol);
 
 		// Operators
-		Solution& operator =(const Solution& other);
 		bool operator ==(const Solution& other) const;
 		bool operator ==(Ptr p) const;
 		bool operator <(const Solution& r) const;
@@ -67,8 +66,8 @@ namespace GA {
 		GAHelper(CCmdLine& cmdLine);
 
 		void generateFitness(Solution::Vector& population);
-		Solution::Pair select(Solution::Vector& population, Solution::Pair& parents);
-		Solution::Ptr crossover(Solution::Pair& parents, Solution::Ptr pSolution);
+		Solution::Pair select(Solution::Vector& population);
+		Solution::Ptr crossover(Solution::Pair& parents);
 		bool mutate(Solution::Ptr pSolution, int upperBound);
 		void replace(Solution::Vector& offsprings, std::vector<Solution::Pair>& parents, Solution::Vector& population);
 
