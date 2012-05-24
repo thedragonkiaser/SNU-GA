@@ -16,58 +16,68 @@
 
 using namespace std;
 
-GridHelper* pGridHelper;
+GridHelper* g_pGridHelper;
 
 int genGenes() {
-	return rand() % pGridHelper->nn;
+	return g_pGridHelper->values[ rand() % g_pGridHelper->values.size() ];
 }
 
 GA::Solution::Ptr genSolution() {
-	GA::Solution::Ptr p = make_shared<GA::Solution>(pGridHelper->columns, pGridHelper->rows);
+	GA::Solution::Ptr p = make_shared<GA::Solution>(g_pGridHelper->nColumns, g_pGridHelper->nRows);
 	generate_n(back_inserter(p->genotype), p->width * p->height, genGenes);
-	p->cost = pGridHelper->scoreGrid(p);
+	p->cost = g_pGridHelper->scoreGrid(p);
 	return p;
 }
 
+struct Config {
+	string sInput;
+	string sOutput;
+	int nPopulation;
+	float fGenerationGap;
+
+	bool bPlot;
+	int nPlot;
+	time_t tDuration;
+
+	Config() {};
+	Config(CCmdLine cmdLine) {
+		sInput = ( cmdLine.GetArgument("-i", 0) );
+		sOutput = ( cmdLine.GetArgument("-o", 0) );
+		nPopulation = Utility::strTo<int>( cmdLine.GetArgument("-n", 0) );
+		fGenerationGap = Utility::strTo<float>( cmdLine.GetArgument("-gap", 0) );
+		bPlot = cmdLine.HasSwitch("-plot");
+		nPlot = bPlot ? Utility::strTo<int>( cmdLine.GetArgument("-plot", 0) ) : 0;
+		tDuration = cmdLine.HasSwitch("-t") ? Utility::strTo<int>( cmdLine.GetArgument("-t", 0) ) : 360000 - 2500;
+	}
+};
+
 int main(int argc, char* argv[]) {
-	time_t tStart = Utility::getMilliSec();
-
 	srand((unsigned int)time(NULL));
-
+	
+	//////////////////////////////////////////////////////// 
 	//////// parse command line arguments
 	CCmdLine cmdLine;
 	cmdLine.SplitLine(argc, argv);
+	Config config(cmdLine);
 
-	string sInput( cmdLine.GetArgument("-i", 0) );
-	string sOutput( cmdLine.GetArgument("-o", 0) );
-	int n = cmdLine.HasSwitch("-n") ? Utility::strTo<int>( cmdLine.GetArgument("-n", 0) ) : 5;
-	int k = cmdLine.HasSwitch("-k") ? Utility::strTo<int>( cmdLine.GetArgument("-k", 0) ) : 1;
-	bool bRepair = !cmdLine.HasSwitch("-noRepair");	
-	bool bPlot = cmdLine.HasSwitch("-plot");
-	int nPlotUnit = bPlot ? Utility::strTo<int>( cmdLine.GetArgument("-plot", 0) ) : 0;
-	bool bDynamicGap = cmdLine.HasSwitch("-dggap");
-	bool bReshuffle = cmdLine.HasSwitch("-reshuffle");
+	time_t tStart = Utility::getMilliSec();
+	time_t tCurrent = tStart;
+	time_t tEnd = tStart + config.tDuration;
 
-	time_t tDuration = cmdLine.HasSwitch("-t") ? Utility::strTo<int>( cmdLine.GetArgument("-t", 0) ) : 600000 - 5000;
-	time_t tEnd = tStart + tDuration;
-
+	//////////////////////////////////////////////////////// 
 	//////// parse input file
-	pGridHelper = new GridHelper;
-	freopen(sInput.c_str(), "r", stdin);
-	pGridHelper->readPoints();
+	g_pGridHelper = new GridHelper;
+	freopen(config.sInput.c_str(), "r", stdin);
+	g_pGridHelper->readPoints();
 	
+	////////////////////////////////////////////////////////
 	//////// prepare the initial population
 	GA::Solution::Vector population;
-	population.reserve(n);
-	generate_n(back_inserter(population), n, genSolution);
+	population.reserve(config.nPopulation);
+	generate_n(back_inserter(population), config.nPopulation, genSolution);
 	sort(population.begin(), population.end(), GA::SolutionPtrGreater());
 	
-	//////// main Loop
-	GA::GAHelper ga(cmdLine);
-	int nGenerations = 0;
-	time_t tCurrent = tStart;
-
-	if (bPlot) {
+	if (config.bPlot) {
 		cout << "Gen\tSize\tBest\tMed\tWorst\t"
 			<< "CostAvg\tCostSTD\t"
 			<< "SelAvg\tSelSTD\t"
@@ -77,19 +87,12 @@ int main(int argc, char* argv[]) {
 		cout.precision(4);
 	}
 
-	if (bDynamicGap)
-		k = population.size() * 0.9;
-
-	int nBestCost = population.front()->cost;
-	int nGensWithNoImprove = 0;
+	////////////////////////////////////////////////////////
+	//////// main Loop
+	GA::GAHelper ga(cmdLine);
+	int nGeneration = 0;
+	int k = config.nPopulation * config.fGenerationGap;
 	while (true) {
-		if (bDynamicGap) {
-			float remainRatio = (float)(tEnd - tCurrent) / (float)(tEnd - tStart);
-			if (remainRatio > 0.9) remainRatio = 0.9;
-			if (remainRatio < 0.1) remainRatio = 0.1;
-			k = population.size() * remainRatio;
-		}
-
 		GA::Solution::Vector offsprings;
 		offsprings.reserve(k);
 
@@ -104,30 +107,17 @@ int main(int argc, char* argv[]) {
 
 			GA::Solution::Ptr pOffspring = ga.crossover(parents);
 
-			ga.mutate(pOffspring, pGridHelper->nn);
+			ga.mutate(pOffspring, g_pGridHelper);
 
-			pOffspring->cost = pGridHelper->scoreGrid(pOffspring);
+			pOffspring->cost = g_pGridHelper->scoreGrid(pOffspring);
 			offsprings.push_back(pOffspring);
 		}
 		ga.replace(offsprings, parentsVec, population);
 
-		++nGenerations;
-
-		if (population.front()->cost > nBestCost) {
-			nGensWithNoImprove = 0;
-			nBestCost = population.front()->cost;
-		}
-		else
-			++nGensWithNoImprove;
-
-		if (nGensWithNoImprove == 100 && bReshuffle) {
-			population.erase(population.begin() + population.size() / 2, population.end());
-			generate_n(back_inserter(population), n - population.size(), genSolution);
-			sort(population.begin(), population.end(), GA::SolutionPtrGreater());
-			nGensWithNoImprove = 0;
-		}
-
-		if (bPlot && nGenerations % nPlotUnit == 0) {
+		++nGeneration;
+		////////////////////////////////////////////////////////
+		//////// plot
+		if (config.bPlot && nGeneration % config.nPlot == 0) {
 			GA::Solution::Ptr pBest = population.front();
 			GA::Solution::Ptr pMedian = population[population.size() / 2];
 			GA::Solution::Ptr pWorst = population.back();
@@ -179,7 +169,7 @@ int main(int argc, char* argv[]) {
 			for (int i=0; i<crossEffects.size(); ++i)
 				fXEffectDev += pow((crossEffects[i]- fXEffectAvg) , 2);
 			
-			cout << nGenerations << "\t" << population.size() << "\t" <<
+			cout << nGeneration << "\t" << population.size() << "\t" <<
 				pBest->cost << "\t" << pMedian->cost << "\t" << pWorst->cost << "\t"
 				<< fixed
 				<< fCostAvg << "\t" << sqrt(fCostDev / population.size()) << "\t" 
@@ -193,12 +183,13 @@ int main(int argc, char* argv[]) {
 			break;
 	}
 
+	////////////////////////////////////////////////////////
 	//////// output
 	ofstream fout;
 #if defined (_TEST_)
-	fout.open(sOutput, fstream::out | fstream::app);
+	fout.open(config.sOutput, fstream::out | fstream::app);
 #else
-	fout.open(sOutput, fstream::out | fstream::trunc);
+	fout.open(config.sOutput, fstream::out | fstream::trunc);
 #endif
 	if (fout.is_open()) {
 		GA::Solution::Ptr pSol = population.front();
@@ -212,7 +203,7 @@ int main(int argc, char* argv[]) {
 
 #if defined (_TEST_)
 		fout << endl;
-		fout << "Generations: " << nGenerations << endl;
+		fout << "Generations: " << nGeneration << endl;
 		fout << "Score : " << pSol->cost << endl;
 		for (int i=0; i<argc; ++i)
 			fout << argv[i] << " ";
@@ -222,4 +213,6 @@ int main(int argc, char* argv[]) {
 #endif
 		fout.close();
 	}
+
+	delete g_pGridHelper;
 }

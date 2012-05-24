@@ -4,7 +4,7 @@ TARGET = packing
 OBJECTS = GridSolver.o GridHelper.o CmdLine.o Utililty.o GA.o Selection.o Crossover.o Mutation.o Replacement.o
 SRCS = $(OBJECTS:.o=.cpp)
 CXX = g++
-CXXFLAGS = -O3 -D linux -D _TEST_ -std=c++0x
+CXXFLAGS = -O3 -D linux -std=c++0x
 
 all: $(OBJECTS)
 	$(CXX) -o $(TARGET) $(OBJECTS)
@@ -13,7 +13,7 @@ all: $(OBJECTS)
 	$(CXX) -c $< $(CXXFLAGS)
 
 run: $(TARGET)
-	./$(TARGET) -i packing.in.1 -o packing.out.1 -t 60000 -n 100 -k 1 -plot 1000 -S 2 2.0 1.0 1 1 -X 1 4 -M 0 0.015 -R 2 
+	./$(TARGET) -i packing.in -o packing.out -n 30 -k 24 -S 2 2.0 1.0 1 1 -X 1 0 -M 0 0.001 -R 3 2 1
 
 clean:
 	rm $(OBJECTS) $(TARGET)

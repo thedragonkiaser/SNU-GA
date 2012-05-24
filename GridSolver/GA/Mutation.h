@@ -4,6 +4,7 @@
 #include "GA.h"
 #include <vector>
 
+class GridHelper;
 namespace GA {
 	class MutationOp {
 	public:
@@ -16,10 +17,10 @@ namespace GA {
 		virtual ~MutationOp() {};
 
 		static MutationOp* create(CCmdLine& cmdLine);
-		virtual bool mutate(Solution::Ptr pSolution, int upperBound);
+		virtual bool mutate(Solution::Ptr pSolution, GridHelper* pHelper);
 
 	protected:
-		virtual int _mutate(int gene, int upperBound) = 0;
+		virtual int _mutate(int gene, GridHelper* pHelper) = 0;
 
 	protected:
 		int _threshold;
@@ -31,6 +32,6 @@ namespace GA {
 		virtual ~UniformMutation() {}
 
 	protected:
-		virtual int _mutate(int gene, int upperBound);
+		virtual int _mutate(int gene, GridHelper* pHelper);
 	};
 }

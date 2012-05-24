@@ -8,6 +8,7 @@
 
 using namespace std::rel_ops;
 
+class GridHelper;
 namespace GA {
 	struct Solution {
 		// Type Definitions
@@ -23,7 +24,7 @@ namespace GA {
 		// Fields
 		ChromosomeType genotype;
 		int width, height;
-		int cost;
+		long long cost;
 
 		// Methods
 		int get(int x, int y);
@@ -68,7 +69,7 @@ namespace GA {
 		void generateFitness(Solution::Vector& population);
 		Solution::Pair select(Solution::Vector& population);
 		Solution::Ptr crossover(Solution::Pair& parents);
-		bool mutate(Solution::Ptr pSolution, int upperBound);
+		bool mutate(Solution::Ptr pSolution, GridHelper *pHelper);
 		void replace(Solution::Vector& offsprings, std::vector<Solution::Pair>& parents, Solution::Vector& population);
 
 	protected:

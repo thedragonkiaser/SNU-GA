@@ -102,8 +102,8 @@ namespace GA {
 	}
 
 	void RouletteWheelSelector::_generateFitness(Solution::Vector& population) {
-		int best = population.front()->cost;
-		int worst = population.back()->cost;
+		long long best = population.front()->cost;
+		long long worst = population.back()->cost;
 		float C = abs((worst - best) / (this->_threshold - 1));
 
 		this->_fitnessSum = 0;

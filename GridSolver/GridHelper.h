@@ -2,6 +2,7 @@
 
 #include "GA/GA.h"
 #include <vector>
+#include <utility>
 
 class GridHelper {
 public:
@@ -9,18 +10,20 @@ public:
 	virtual ~GridHelper() {};
 
 	void readPoints();
-	int scoreGrid(GA::Solution::Ptr pSol);
+	long long scoreGrid(GA::Solution::Ptr pSol);
 	
 protected:
 	int getPoints(GA::Solution::Ptr pSol, int x1, int y1, int x2, int y2);
 
 public:
-	int rows, columns, nn;
+	int nRows, nColumns, nMaxIndex;
 	std::vector<int> values;
 
 private:
 	std::vector<int> _points;
 	std::vector<int> _used;
+
+	std::vector< std::vector<int> > _pointList;
 };
 
 

@@ -6,6 +6,7 @@
 #include "Crossover.h"
 #include "Mutation.h"
 #include "Replacement.h"
+#include "../GridHelper.h"
 
 namespace GA {
 	// Constructors
@@ -72,8 +73,8 @@ namespace GA {
 	Solution::Ptr GAHelper::crossover(Solution::Pair& parents) {
 		return this->_crossover->crossover(parents);
 	}
-	bool GAHelper::mutate(Solution::Ptr pSolution, int upperBound) {
-		return this->_mutator->mutate(pSolution, upperBound);
+	bool GAHelper::mutate(Solution::Ptr pSolution, GridHelper *pHelper) {
+		return this->_mutator->mutate(pSolution, pHelper);
 	}
 
 	void GAHelper::replace(Solution::Vector& offsprings, vector<Solution::Pair>& parents, Solution::Vector& population) {

@@ -1,6 +1,6 @@
 #include "Mutation.h"
 #include "../lib/Utililty.h"
-
+#include "../GridHelper.h"
 
 namespace GA {
 	MutationOp* MutationOp::create(CCmdLine& cmdLine) {
@@ -16,19 +16,19 @@ namespace GA {
 		_threshold = (int)(Utility::strTo<float>( cmdLine.GetArgument("-M", 1) ) * 10000);
 	}
 
-	bool MutationOp::mutate(Solution::Ptr pSolution, int upperBound) {
+	bool MutationOp::mutate(Solution::Ptr pSolution, GridHelper* pHelper) {
 		bool bMutated = false;
 		vector<int>::iterator it = pSolution->genotype.begin();
 		for(; it != pSolution->genotype.end(); ++it) {
 			if (rand()%10000 < this->_threshold) {
-				*it = this->_mutate(*it, upperBound);
+				*it = this->_mutate(*it, pHelper);
 				bMutated = true;
 			}
 		}
 		return bMutated;
 	}
 
-	int UniformMutation::_mutate(int gene, int upperBound) {
-		return rand() % upperBound;
+	int UniformMutation::_mutate(int gene, GridHelper* pHelper) {
+		return pHelper->values[ rand() % pHelper->values.size() ];
 	}
 }
