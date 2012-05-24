@@ -171,15 +171,10 @@ int GridHelper::_getPoints(GA::Solution::Ptr pSol, int cx, int cy, int rx, int r
 
 void GridHelper::localOptimization(GA::Solution::Ptr pSol) {
 	long long cost;
-	GA::Solution temp;
 	do {
 		cost = pSol->cost;
-		temp = *pSol;
 		pSol->cost = this->_localOptimization(pSol);
 	} while (pSol->cost > cost);
-
-	if ( temp.cost > pSol->cost )
-		*pSol = temp;
 }
 
 long long GridHelper::_localOptimization(GA::Solution::Ptr pSol) {
