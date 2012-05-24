@@ -19,6 +19,18 @@ namespace GA {
 		genotype.reserve( width * height );
 	}
 
+	Solution::Solution(const Solution& sol)
+		: width(sol.width), height(sol.height), cost(sol.cost) {
+		this->genotype.resize( this->width * this->height );
+		copy(sol.genotype.begin(), sol.genotype.end(), this->genotype.begin());
+	}
+
+	Solution::Solution(Ptr pSol)
+		: width(pSol->width), height(pSol->height), cost(pSol->cost) {
+		this->genotype.resize( this->width * this->height );
+		copy(pSol->genotype.begin(), pSol->genotype.end(), this->genotype.begin());
+	}
+
 	// Methods
 	int Solution::get(int x, int y) {
 		assert(y * width + x < (int)this->genotype.size());
@@ -46,6 +58,16 @@ namespace GA {
 	}
 
 	// Operators
+	Solution& Solution::operator =(const Solution& rhs) {
+		this->width = rhs.width;
+		this->height = rhs.height;
+		this->cost = rhs.cost;
+
+		this->genotype.resize( this->width * this->height );
+		copy(rhs.genotype.begin(), rhs.genotype.end(), this->genotype.begin());
+
+		return *this;
+	}
 	bool Solution::operator ==(const Solution& other) const {
 		return equal(this->genotype.begin(), this->genotype.end(), other.genotype.begin());
     }

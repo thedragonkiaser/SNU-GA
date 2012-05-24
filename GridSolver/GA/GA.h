@@ -20,6 +20,8 @@ namespace GA {
 		// Constructors
 		Solution();
 		Solution(int w, int h);
+		Solution(const Solution& sol);
+		Solution(Ptr pSol);
 
 		// Fields
 		ChromosomeType genotype;
@@ -33,6 +35,7 @@ namespace GA {
 		int getDistance(Ptr pSol);
 
 		// Operators
+		Solution& operator =(const Solution& other);
 		bool operator ==(const Solution& other) const;
 		bool operator ==(Ptr p) const;
 		bool operator <(const Solution& r) const;
