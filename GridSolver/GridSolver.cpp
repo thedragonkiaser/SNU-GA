@@ -92,6 +92,7 @@ int main(int argc, char* argv[]) {
 	GA::GAHelper ga(cmdLine);
 	int nGeneration = 0;
 	int k = (int)(config.nPopulation * config.fGenerationGap);
+	if ( k < 1 ) k = 1;
 	while (true) {
 		GA::Solution::Vector offsprings;
 		offsprings.reserve(k);
@@ -105,10 +106,10 @@ int main(int argc, char* argv[]) {
 			GA::Solution::Pair parents = ga.select(population);
 			parentsVec.push_back(parents);
 
-//			GA::Solution::Ptr pOffspring = ga.crossover(parents);
-			GA::Solution::Ptr pOffspring = parents.first;
+			GA::Solution::Ptr pOffspring = ga.crossover(parents);
+//			GA::Solution::Ptr pOffspring = parents.first;
 
-//			ga.mutate(pOffspring, g_pGridHelper);
+			ga.mutate(pOffspring, g_pGridHelper);
 
 			pOffspring->cost = g_pGridHelper->scoreGrid(pOffspring);
 			g_pGridHelper->localOptimization(pOffspring);

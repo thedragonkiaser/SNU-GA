@@ -135,19 +135,20 @@ long long GridHelper::scoreGrid(GA::Solution::Ptr pSol)
 	fill(this->_used.begin(), this->_used.end(), 0);
 
     long long score = 0;
-    for (int x=0; x<pSol->width; x++) {
-        for (int y=0; y<pSol->height; y++) {
-            // score the pairs in the neighborhood of (x, y)
-            score += this->_getPoints(pSol, x, y, x+1, y-1);
-            score += this->_getPoints(pSol, x, y, x+1, y);
-            score += this->_getPoints(pSol, x, y, x+1, y+1);
-            score += this->_getPoints(pSol, x, y, x, y-1);
-            score += this->_getPoints(pSol, x, y, x, y+1);
-            score += this->_getPoints(pSol, x, y, x-1, y-1);
-            score += this->_getPoints(pSol, x, y, x-1, y);
-            score += this->_getPoints(pSol, x, y, x-1, y+1);
-        }
-    }
+
+	int size = pSol->genotype.size();
+	for (int i=0; i<size; ++i) {
+		vector<int>& adjacent = this->_adjacent[i];
+		int adjSize = adjacent.size();
+
+		int c = pSol->genotype[i];
+		for (int k=0; k<adjSize; ++k) {
+			int r = pSol->genotype[adjacent[k]];
+			this->_used[ IDX(c, r) ] += 1;
+			if ( this->_used[ IDX(c, r) ] == 1 )
+				score += this->_points[ IDX(c, r) ];
+		}
+	}
 	
     return score;
 }
