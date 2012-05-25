@@ -28,9 +28,16 @@ void GridHelper::readPoints()
 	this->_localSearchCnt = 0;
 	this->_localUsedPairs.reserve(bufSize);
 	this->_localUsedPairs.insert(this->_localUsedPairs.begin(), bufSize, 0);
+
+	this->_localSearchCnt2 = 0;
+	this->_localSearchConsidered.reserve(this->nRows * this->nColumns);
+	this->_localSearchConsidered.insert(this->_localSearchConsidered.begin(), (this->nRows * this->nColumns), 0);
 	
 	this->_pairList.reserve(this->nMaxIndex);
 	this->_pairList.insert(this->_pairList.begin(), this->nMaxIndex, vector<int>());
+
+	this->_localPointSum.reserve(this->nMaxIndex);
+	this->_localPointSum.insert(this->_localPointSum.begin(), this->nMaxIndex, 0);
 	
 	this->_adjacentCells.reserve(this->nRows * this->nColumns);
 	this->_adjacentCells.insert(this->_adjacentCells.begin(), this->nRows * this->nColumns, vector<int>());
@@ -165,17 +172,16 @@ void GridHelper::localOptimization(GA::Solution::Ptr pSol) {
 }
 
 long long GridHelper::_localOptimization(GA::Solution::Ptr pSol) {
-	vector<int> considered;
-	considered.reserve(pSol->genotype.size());
-	considered.insert(considered.begin(), pSol->genotype.size(), 0);
+	++this->_localSearchCnt2;
 
 	int idx = rand() % pSol->genotype.size();
 
 	queue<int> q;
 	q.push( idx );
+	this->_localSearchConsidered[ idx ] = this->_localSearchCnt2;
+
 	while ( !q.empty() ) {
 		idx = q.front();
-		considered[ idx ] = 1;
 
 		vector<int>& adjacent = this->_adjacentCells[idx];
 		int size = adjacent.size();
@@ -193,9 +199,9 @@ long long GridHelper::_localOptimization(GA::Solution::Ptr pSol) {
 			this->_usedPairs[ IDX( val, v) ] += 1;
 			this->_usedPairs[ IDX( v, val) ] += 1;
 
-			if ( considered[ adjacent[i] ] == 0 ) {
+			if ( this->_localSearchConsidered[ adjacent[i] ] < this->_localSearchCnt2 ) {
 				q.push( adjacent[i] );
-				considered[ adjacent[i] ] = 1;
+				this->_localSearchConsidered[ adjacent[i] ] = this->_localSearchCnt2;
 			}
 		}
 
@@ -203,11 +209,6 @@ long long GridHelper::_localOptimization(GA::Solution::Ptr pSol) {
 		q.pop();
 	}
 	return this->scoreGrid(pSol);
-}
-
-bool map_comp(map<int, long long>::value_type &i1, map<int, long long>::value_type &i2)
-{
-	return i1.second<i2.second;
 }
 
 int GridHelper::_findBestMatch(GA::Solution::Ptr pSol, int idx) {
@@ -221,7 +222,6 @@ int GridHelper::_findBestMatch(GA::Solution::Ptr pSol, int idx) {
 
 		vector<int>& wl = this->_pairList[ va ];
 		int kSize = wl.size();
-
 		for ( int k=0; k<kSize; ++k ) {
 			int& vc = wl[k];
 			if (this->_usedPairs[ IDX(vc, va) ] == 0 && this->_localUsedPairs[ IDX(vc, va) ] < this->_localSearchCnt) {
@@ -233,6 +233,17 @@ int GridHelper::_findBestMatch(GA::Solution::Ptr pSol, int idx) {
 		}
 	}
 
-	map<int, long long>::iterator it = max_element(this->_localPointSum.begin(), this->_localPointSum.end(), map_comp);
-	return it->first;
+	int maxIdx = 0;
+	long long maxSum = 0;
+	for (int i=0; i<this->nMaxIndex; ++i) {
+		if (this->_localPointSum[i] != 0) {
+			if (this->_localPointSum[i] > maxSum) {
+				maxSum = this->_localPointSum[i];
+				maxIdx = i;
+			}
+			this->_localPointSum[i] = 0;
+		}
+	}
+
+	return maxIdx;
 }
