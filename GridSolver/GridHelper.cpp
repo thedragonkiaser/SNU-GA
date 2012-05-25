@@ -27,14 +27,14 @@ void GridHelper::readPoints()
 	this->_used.reserve(size);
 	this->_used.insert(this->_used.begin(), size, 0);
 
-	this->_usedLocal.reserve(size);
-	this->_usedLocal.insert(this->_usedLocal.begin(), size, 0);
+//	this->_usedLocal.reserve(size);
+//	this->_usedLocal.insert(this->_usedLocal.begin(), size, 0);
 
 	this->_pointList.reserve(this->nMaxIndex);
 	this->_pointList.insert(this->_pointList.begin(), this->nMaxIndex, vector<int>());
 
-	this->_sumLocal.reserve(this->nMaxIndex);
-	this->_sumLocal.insert(this->_sumLocal.begin(), this->nMaxIndex, 0);
+//	this->_sumLocal.reserve(this->nMaxIndex);
+//	this->_sumLocal.insert(this->_sumLocal.begin(), this->nMaxIndex, 0);
 
 	this->_adjacent.reserve(this->nRows * this->nColumns);
 	this->_adjacent.insert(this->_adjacent.begin(), this->nRows * this->nColumns, vector<int>());
@@ -219,28 +219,38 @@ long long GridHelper::_localOptimization(GA::Solution::Ptr pSol) {
 	return this->scoreGrid(pSol);
 }
 
+bool map_comp(map<int, long long>::value_type &i1, map<int, long long>::value_type &i2)
+{
+	return i1.second<i2.second;
+}
+
 int GridHelper::_findBestMatch(GA::Solution::Ptr pSol, int idx) {
-	fill(this->_usedLocal.begin(), this->_usedLocal.end(), 0);
-	fill(this->_sumLocal.begin(), this->_sumLocal.end(), 0);
+	this->_usedLocal.clear();
+	this->_sumLocal.clear();
 
 	vector<int>& adjacent = this->_adjacent[idx];
 	int size = adjacent.size();
 	for (int i=0; i<size; ++i) {
-		int va = pSol->genotype[ adjacent[i] ];
+		int& va = pSol->genotype[ adjacent[i] ];
 
 		vector<int>& wl = this->_pointList[ va ];
 		int kSize = wl.size();
 		for ( int k=0; k<kSize; ++k ) {
-			int vc = wl[k];
-			if (this->_used[ IDX(vc, va) ] == 0 && this->_usedLocal[ IDX(vc, va) ] == 0) {
+			int& vc = wl[k];
+			if (this->_used[ IDX(vc, va) ] != 0)
+				continue;
+
+			int key = vc * 1000 + va;
+			hash_set<int>::iterator it = this->_usedLocal.find( key );
+			if (it != this->_usedLocal.end() ) {
 				this->_sumLocal[ vc ] += this->_points[ IDX(vc, va) ];
 				if ( vc != va )
-					this->_sumLocal[ vc ] += this->_points[ IDX(va, vc) ];
-				this->_usedLocal[ IDX(vc, va) ] += 1;
+					this->_sumLocal[ vc ] += this->_points[ IDX(vc, va) ];
+				this->_usedLocal.insert( key );
 			}
 		}
 	}
 
-	vector<long long>::iterator it = max_element(this->_sumLocal.begin(), this->_sumLocal.end());
-	return distance(this->_sumLocal.begin(), it);
+	map<int, long long>::iterator it = max_element(this->_sumLocal.begin(), this->_sumLocal.end(), map_comp);
+	return it->first;
 }

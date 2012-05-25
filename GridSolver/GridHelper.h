@@ -2,6 +2,8 @@
 
 #include "GA/GA.h"
 #include <vector>
+#include <map>
+#include <hash_set>
 #include <utility>
 
 class GridHelper {
@@ -30,8 +32,6 @@ private:
 	
 	std::vector< std::vector<int> > _pointList;
 	std::vector< std::vector<int> > _adjacent;
-	std::vector<int> _usedLocal;
-	std::vector<long long> _sumLocal;
+	std::hash_set<int> _usedLocal;
+	std::map<int, long long> _sumLocal;
 };
-
-
