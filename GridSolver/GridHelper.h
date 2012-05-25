@@ -17,8 +17,6 @@ public:
 	void localOptimization(GA::Solution::Ptr pSol);
 	
 protected:
-	int _getPoints(GA::Solution::Ptr pSol, int x1, int y1, int x2, int y2);
-
 	long long _localOptimization(GA::Solution::Ptr pSol);
 	int _findBestMatch(GA::Solution::Ptr pSol, int idx);
 
@@ -28,10 +26,12 @@ public:
 
 private:
 	std::vector<int> _points;
-	std::vector<int> _used;
-	
-	std::vector< std::vector<int> > _pointList;
-	std::vector< std::vector<int> > _adjacent;
-	std::hash_set<int> _usedLocal;
-	std::map<int, long long> _sumLocal;
+	std::vector<int> _usedPairs;
+
+	std::vector< std::vector<int> > _pairList;
+	std::vector< std::vector<int> > _adjacentCells;
+
+	int _localSearchCnt;
+	std::vector<int> _localUsedPairs;
+	std::map<int, long long> _localPointSum;
 };
