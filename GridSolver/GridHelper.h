@@ -2,8 +2,6 @@
 
 #include "GA/GA.h"
 #include <vector>
-#include <map>
-#include <hash_set>
 #include <utility>
 
 class GridHelper {
@@ -33,5 +31,8 @@ private:
 
 	int _localSearchCnt;
 	std::vector<int> _localUsedPairs;
-	std::map<int, long long> _localPointSum;
+	std::vector<long long> _localPointSum;
+
+	int _localSearchCnt2;
+	std::vector<int> _localSearchConsidered;
 };
