@@ -212,7 +212,6 @@ long long GridHelper::_localOptimization(GA::Solution::Ptr pSol) {
 }
 
 int GridHelper::_findBestMatch(GA::Solution::Ptr pSol, int idx) {
-	this->_localPointSum.clear();
 	++this->_localSearchCnt;
 
 	vector<int>& adjacent = this->_adjacentCells[idx];
@@ -225,9 +224,11 @@ int GridHelper::_findBestMatch(GA::Solution::Ptr pSol, int idx) {
 		for ( int k=0; k<kSize; ++k ) {
 			int& vc = wl[k];
 			if (this->_usedPairs[ IDX(vc, va) ] == 0 && this->_localUsedPairs[ IDX(vc, va) ] < this->_localSearchCnt) {
-				this->_localPointSum[ vc ] += this->_points[ IDX(vc, va) ];
 				if ( vc != va )
-					this->_localPointSum[ vc ] += this->_points[ IDX(va, vc) ];
+					this->_localPointSum[ vc ] += ( this->_points[ IDX(va, vc) ] + this->_points[ IDX(vc, va) ] );
+				else
+					this->_localPointSum[ vc ] += this->_points[ IDX(vc, va) ];
+
 				this->_localUsedPairs[ IDX(vc, va) ] = this->_localSearchCnt;
 			}
 		}

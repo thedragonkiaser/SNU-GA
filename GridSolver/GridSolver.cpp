@@ -259,17 +259,20 @@ int main(int argc, char* argv[]) {
 			it = population.begin();
 			for (; it != population.end(); ++it)
 				fCostDev += (((*it)->cost - fCostAvg) * ((*it)->cost - fCostAvg));
-			fout << fCostAvg << "\t" << sqrt(fCostDev / population.size()) << "\t" << endl;
+			fout << "Avg: " << fixed << fCostAvg << "\t"
+				<< "SD: " << sqrt(fCostDev / population.size()) << endl;
 		}
 		else {
 			GA::Solution::Ptr pSol = population.front();
 			int size = (int)pSol->genotype.size();
+			/*
 			for (int i=0; i<size; ++i) {
 				if ( (i+1) % pSol->width == 0)
 					fout << pSol->genotype[i] << endl;
 				else
 					fout << pSol->genotype[i] << " ";
 			}
+			*/
 
 	#if defined (_TEST_)
 			fout << endl;
