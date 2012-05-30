@@ -50,7 +50,7 @@ namespace GA {
 	bool ReplaceParent::_remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) {			
 		Solution::Vector::iterator it = remove_if(population.begin(), population.end(),	bind1st(equal_to<Solution::Ptr>(), parents.first));
 		if (it == population.end())
-			it = remove_if(population.begin(), population.end(),	bind1st(equal_to<Solution::Ptr>(), parents.second));
+			it = remove_if(population.begin(), population.end(), bind1st(equal_to<Solution::Ptr>(), parents.second));
 
 		if (it == population.end())
 			population.pop_back();
@@ -62,11 +62,14 @@ namespace GA {
 	//////////////////////////// ReplaceWorstParent ////////////////////////////
 	bool ReplaceWorstParent::_remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) {
 		Solution::Ptr parent( *(parents.first) < *(parents.second) ? parents.first : parents.second );
-		Solution::Vector::iterator it = remove_if(population.begin(), population.end(),	bind1st(equal_to<Solution::Ptr>(), parent));
-		if (it == population.end() && it != population.begin())
-			it = remove_if(population.begin(), population.end(), bind1st(equal_to<Solution::Ptr>(), *(parents.first) < *(parents.second) ? parents.second : parents.first));
+		Solution::Ptr another( *(parents.first) < *(parents.second) ? parents.second : parents.first );
 
-		if (it != population.end() && it != population.begin())
+		Solution::Vector::iterator it = remove_if(population.begin(), population.end(),	bind1st(equal_to<Solution::Ptr>(), parent));
+
+		if (it == population.end() && *population.front() != *another)
+			it = remove_if(population.begin(), population.end(), bind1st(equal_to<Solution::Ptr>(), another));
+
+		if (it != population.end())
 			population.erase(it);
 		else
 			population.pop_back();
