@@ -13,6 +13,8 @@ namespace GA {
 			case WorstParent:	return new ReplaceWorstParent(cmdLine);
 			case Crowding:		return new ReplaceCrowd(cmdLine);
 			case Strugle:		return new ReplaceStrugle(cmdLine);
+			case Strugle2:		return new ReplaceStrugle2(cmdLine);
+			case Strugle3:		return new ReplaceStrugle3(cmdLine);
 		}
 		return NULL;
 	}
@@ -131,6 +133,51 @@ namespace GA {
 		else
 			return false;
 
+		return true;
+	}
+	
+	//////////////////////////// ReplaceStrugle2 ////////////////////////////
+	bool ReplaceStrugle2::_remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) {
+		int minDiff = -1;
+		int solIdx = -1;
+
+		int size = population.size();
+		for (int i=0; i<size; ++i) {
+			if (population[i]->cost < pOffspring->cost) {
+				for (; i<size; ++i) {
+					int diff = pOffspring->getDistance(population[i]);
+					if (minDiff == -1 || diff < minDiff) {
+						minDiff = diff;
+						solIdx = i;
+					}
+				}
+			}
+		}
+
+		if (solIdx == -1)
+			return false;
+
+		population.erase(population.begin() + solIdx);
+		return true;
+	}
+
+	bool ReplaceStrugle3::_remove(Solution::Ptr pOffspring, Solution::Pair& parents, Solution::Vector& population) {
+		int minDiff = -1;
+		int solIdx = -1;
+
+		int size = population.size();
+		for (int i=0; i<size; ++i) {
+			int diff = pOffspring->getDistance(population[i]);
+			if (minDiff == -1 || diff < minDiff) {
+				minDiff = diff;
+				solIdx = i;
+			}
+		}
+
+		if (solIdx == 0)
+			return false;
+
+		population.erase(population.begin() + solIdx);
 		return true;
 	}
 }
