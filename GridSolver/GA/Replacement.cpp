@@ -88,20 +88,25 @@ namespace GA {
 		int minDiff = -1;
 		int solIdx = -1;
 
-		set<int> indice;
-		while(indice.size() != this->_nCrowdSize)
-			indice.insert(rand() % (population.size() - 1) + 1);
+		int pSize = population.size();
 
-		set<int>::iterator it = indice.begin();
-		for (; it != indice.end(); ++it) {
-			int idx = *it;
+		vector<int> indice(pSize - 1, 0);
+		for (int i=0; i<pSize - 1; ++i)
+			indice[i] = i + 1;
+
+		random_shuffle(indice.begin(), indice.end());
+		indice.erase(indice.begin() + this->_nCrowdSize, indice.end());
+		sort(indice.rbegin(), indice.rend());
+
+		for (int i=0; i<this->_nCrowdSize; ++i) {
+			int idx = indice[i];
 			int diff = pOffspring->getDistance(population[idx]);
 			if (minDiff == -1 || diff < minDiff) {
 				minDiff = diff;
 				solIdx = idx;
 			}
 		}
-
+		
 		if (this->_bReplaceOnlyBetter) {
 			if ( pOffspring->cost > population[solIdx]->cost )
 				population.erase(population.begin() + solIdx);

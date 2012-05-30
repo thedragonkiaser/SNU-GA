@@ -7,6 +7,7 @@
 #include <cmath>
 #include <utility>
 #include <cstdlib>
+#include <algorithm>
 
 using namespace std;
 
@@ -156,25 +157,29 @@ namespace GA {
 			nSize = (int)pow((double)2, this->_exp);
 		}
 
-		std::set<int> indice;
-		while (indice.size() != nSize)
-			indice.insert( rand() % population.size() );
+		int pSize = population.size();
+		vector<int> indice(pSize, 0);
+		for (int i=0; i<pSize; ++i)
+			indice[i] = i;
 
+		random_shuffle(indice.begin(), indice.end());
+		indice.erase(indice.begin() + nSize, indice.end());
+		
 		for (int i=0; i<this->_exp; ++i) {
-			std::set<int> temp;
-			std::set<int>::iterator it = indice.begin();
-			while (it != indice.end()) {
-				int idx1 = *it;	++it;
-				int idx2 = *it; ++it;
+			vector<int> temp;
+			temp.reserve(indice.size());
+			for (int k=0; k<indice.size(); ++k) {
+				int idx1 = indice[k]; ++k;
+				int idx2 = indice[k];
 				int r = rand() % 100;
 
 				if (this->_threshold > r)
-					temp.insert( (*population[idx1] < *population[idx2]) ? idx2 : idx1 );
+					temp.push_back( (*population[idx1] < *population[idx2]) ? idx2 : idx1);
 				else
-					temp.insert( (*population[idx1] < *population[idx2]) ? idx1 : idx2 );
+					temp.push_back( (*population[idx1] < *population[idx2]) ? idx1 : idx2 );
 			}
-			indice = temp;
+			indice.swap(temp);
 		}
-		return *indice.begin();
+		return indice.front();
 	}
 }
