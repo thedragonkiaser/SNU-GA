@@ -217,12 +217,12 @@ int GridHelper::_findBestMatch(GA::Solution::Ptr pSol, int idx) {
 	vector<int>& adjacent = this->_adjacentCells[idx];
 	int size = adjacent.size();
 	for (int i=0; i<size; ++i) {
-		int& va = pSol->genotype[ adjacent[i] ];
+		int va = pSol->genotype[ adjacent[i] ];
 
 		vector<int>& wl = this->_pairList[ va ];
 		int kSize = wl.size();
 		for ( int k=0; k<kSize; ++k ) {
-			int& vc = wl[k];
+			int vc = wl[k];
 			if (this->_usedPairs[ IDX(vc, va) ] == 0 && this->_localUsedPairs[ IDX(vc, va) ] < this->_localSearchCnt) {
 				if ( vc != va )
 					this->_localPointSum[ vc ] += ( this->_points[ IDX(va, vc) ] + this->_points[ IDX(vc, va) ] );
