@@ -251,39 +251,34 @@ int main(int argc, char* argv[]) {
 			long long nCostSum = 0;
 			GA::Solution::Vector::iterator it = population.begin();
 			for (; it != population.end(); ++it)
-				nCostSum += (*it)->cost;
-
-			float fCostAvg = (float)nCostSum / population.size();
-
-			float fCostDev = 0;
-			it = population.begin();
-			for (; it != population.end(); ++it)
-				fCostDev += (((*it)->cost - fCostAvg) * ((*it)->cost - fCostAvg));
-			fout << "Avg: " << fixed << fCostAvg << "\t"
-				<< "SD: " << sqrt(fCostDev / population.size()) << endl;
+				fout << (*it)->cost << endl;
 		}
-		else {
+		else if (config.nMode == Config::HYBRID_GA) {
 			GA::Solution::Ptr pSol = population.front();
 			int size = (int)pSol->genotype.size();
-			/*
 			for (int i=0; i<size; ++i) {
 				if ( (i+1) % pSol->width == 0)
 					fout << pSol->genotype[i] << endl;
 				else
 					fout << pSol->genotype[i] << " ";
 			}
-			*/
 
 	#if defined (_TEST_)
 			fout << endl;
 			fout << "Generations: " << nGeneration << endl;
 			fout << "Score : " << pSol->cost << endl;
+			fout << pSol->cost << endl;
+
 			for (int i=0; i<argc; ++i)
 				fout << argv[i] << " ";
 			fout << endl;
 			fout << "================================================================================" << endl;
 			fout << endl;
 	#endif
+		}
+		else {
+			GA::Solution::Ptr pSol = population.front();
+			fout << pSol->cost << endl;
 		}
 
 		fout.close();

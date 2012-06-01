@@ -14,7 +14,6 @@ public:
 
 	void localOptimization(GA::Solution::Ptr pSol);
 	
-protected:
 	long long _localOptimization(GA::Solution::Ptr pSol);
 	int _findBestMatch(GA::Solution::Ptr pSol, int idx);
 
