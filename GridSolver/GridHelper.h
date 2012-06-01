@@ -14,9 +14,10 @@ public:
 
 	void localOptimization(GA::Solution::Ptr pSol);
 	
-protected:
 	long long _localOptimization(GA::Solution::Ptr pSol);
 	int _findBestMatch(GA::Solution::Ptr pSol, int idx);
+
+	void setPairTable(GA::Solution::Ptr pSol);
 
 public:
 	int nRows, nColumns, nMaxIndex;

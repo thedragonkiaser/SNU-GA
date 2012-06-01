@@ -248,3 +248,25 @@ int GridHelper::_findBestMatch(GA::Solution::Ptr pSol, int idx) {
 
 	return maxIdx;
 }
+
+void GridHelper::setPairTable(GA::Solution::Ptr pSol) {
+	int size = this->nMaxIndex * this->nMaxIndex;
+	pSol->pairs.reserve(size);
+	pSol->pairs.insert(pSol->pairs.begin(), size, 0);
+
+	
+	int ssize = pSol->genotype.size();
+	for (int i=0; i<ssize; ++i) {
+		int c = pSol->genotype[i];
+
+		vector<int>& adjacent = this->_adjacentCells[i];
+		int adjSize = adjacent.size();
+
+		for (int k=0; k<adjSize; ++k) {
+			int r = pSol->genotype[ adjacent[k] ];
+			if (this->_points[ IDX(c, r) ] > 0)
+				pSol->pairs[ IDX(c, r)  ] = 1;
+				//pSol->pairs[ IDX(c, r)  ] += 1;
+		}
+	}
+}

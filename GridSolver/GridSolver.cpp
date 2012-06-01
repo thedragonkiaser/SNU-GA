@@ -91,6 +91,11 @@ int main(int argc, char* argv[]) {
 	////////////////////////////////////////////////////////
 	//////// main Loop
 	GA::GAHelper ga(cmdLine);
+	
+	GA::Solution::Vector::iterator it = population.begin();
+	for (; it != population.end(); ++it)
+		g_pGridHelper->setPairTable(*it);
+
 	int nGeneration = 0;
 
 	switch (config.nMode) {
@@ -124,6 +129,8 @@ int main(int argc, char* argv[]) {
 
 				pOffspring->cost = g_pGridHelper->scoreGrid(pOffspring);
 				g_pGridHelper->localOptimization(pOffspring);
+
+				g_pGridHelper->setPairTable(pOffspring);
 
 				offsprings.push_back(pOffspring);
 			}
@@ -265,14 +272,13 @@ int main(int argc, char* argv[]) {
 		else {
 			GA::Solution::Ptr pSol = population.front();
 			int size = (int)pSol->genotype.size();
-			/*
+
 			for (int i=0; i<size; ++i) {
 				if ( (i+1) % pSol->width == 0)
 					fout << pSol->genotype[i] << endl;
 				else
 					fout << pSol->genotype[i] << " ";
 			}
-			*/
 
 	#if defined (_TEST_)
 			fout << endl;
