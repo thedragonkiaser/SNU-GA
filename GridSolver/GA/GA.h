@@ -28,6 +28,8 @@ namespace GA {
 		int width, height;
 		long long cost;
 
+		std::vector<int> pairs;
+
 		// Methods
 		int get(int x, int y);
 		void set(int x, int y, int val);

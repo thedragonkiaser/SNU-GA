@@ -45,9 +45,11 @@ namespace GA {
 	int Solution::getDistance(const Solution& sol) {
 		// Hamming Distance
 		int dist=0;
-		int size = this->genotype.size();
+		int size = this->pairs.size();
 		for (int i=0; i<size; ++i) {
-			if (this->genotype[i] != sol.genotype[i])
+//			int d = abs(this->pairs[i] - sol.pairs[i]);
+//			dist += d;
+			if (this->pairs[i] != sol.pairs[i])
 				++dist;
 		}
 		return dist;
